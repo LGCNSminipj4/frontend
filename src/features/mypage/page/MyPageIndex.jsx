@@ -1,48 +1,18 @@
+import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
-const Wrapper = styled.div`
-    max-width: 375px;
-    margin: 0 auto;
-    width: 100%;
-    min-height: 100vh;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-`;
+import { Container } from "../../../components/common/CommonStyles";
+import PageHeader from "../../../components/common/PageHeader";
 
-const Header = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    position: relative;
-    margin-bottom: 20px;
-`;
+// --- 페이지 전용 스타일 ---
 
-const BackIcon = styled.div`
-    position: absolute;
-    left: 16px;
-    cursor: pointer;
-    font-size: 20px;
-    color: #888;
-`;
-
-const HeaderTitle = styled.h1`
-    font-size: 18px;
-    font-weight: bold;
-    color: #000;
-    margin: 0;
-`;
-
-const Container = styled.div`
-    padding: 0 16px;
+const ContentWrapper = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
-    box-sizing: border-box;
-    padding-bottom: 40px;
+    /* Container에 이미 padding이 있으므로 여기선 생략하거나 조정 가능 */
+    flex: 1;
 `;
 
 const UserName = styled.h2`
@@ -60,6 +30,7 @@ const ActionButton = styled.button`
     background-color: ${(props) => (props.gray ? "#f5f5f5" : "#fff")};
     cursor: pointer;
     margin-bottom: 30px;
+    border-radius: 4px; /* 약간의 둥글기 추가 (선택사항) */
     
     &:hover {
         opacity: 0.8;
@@ -88,13 +59,10 @@ const MyPageIndex = () => {
     const navigate = useNavigate();
 
     return (
-        <Wrapper>
-            <Header>
-                <BackIcon onClick={() => navigate(-1)}>&lt;</BackIcon>
-                <HeaderTitle>마이페이지</HeaderTitle>
-            </Header>
+        <Container>
+            <PageHeader title="마이페이지" />
 
-            <Container>
+            <ContentWrapper>
                 <UserName>xx님</UserName>
 
                 <ActionButton onClick={() => navigate('/mypage/edit')}>
@@ -114,8 +82,8 @@ const MyPageIndex = () => {
                 <ActionButton gray onClick={() => console.log("로그아웃")}>
                     로그아웃
                 </ActionButton>
-            </Container>
-        </Wrapper>
+            </ContentWrapper>
+        </Container>
     );
 };
 

@@ -2,41 +2,16 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
+import { Container, PrimaryButton } from '../../../components/common/CommonStyles';
+import PageHeader from '../../../components/common/PageHeader';
 
-const Wrapper = styled.div`
-    max-width: 375px;
-    margin: 0 auto;
-    width: 100%;
+// --- 페이지 전용 스타일 ---
+
+const PageWrapper = styled(Container)`
+    padding: 0;
     height: 100vh;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    position: relative;
-`;
-
-const Header = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    position: relative;
-    flex-shrink: 0;
-`;
-
-const BackIcon = styled.div`
-    position: absolute;
-    left: 16px;
-    cursor: pointer;
-    font-size: 20px;
-    color: #888;
-`;
-
-const HeaderTitle = styled.h1`
-    font-size: 18px;
-    font-weight: normal;
-    color: #000;
-    margin: 0;
+    min-height: unset;
+    overflow: hidden;
 `;
 
 // 상단 요약 텍스트
@@ -92,7 +67,8 @@ const ButtonGroup = styled.div`
     gap: 10px;
 `;
 
-const SmallButton = styled.button`
+// 로컬 작은 버튼 (복구/삭제)
+const SmallActionButton = styled.button`
     padding: 8px 16px;
     background-color: #e0e0e0; /* 회색 버튼 배경 */
     border: none;
@@ -106,61 +82,41 @@ const SmallButton = styled.button`
     }
 `;
 
+// 하단 버튼 영역 고정
 const Footer = styled.div`
     padding: 20px 24px 40px 24px;
     flex-shrink: 0;
+    background-color: #fff; /* 배경색 지정으로 리스트와 겹침 방지 */
 `;
-
-const DeleteAllButton = styled.button`
-    width: 100%;
-    padding: 16px;
-    background-color: #e0e0e0;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    color: #333;
-    cursor: pointer;
-
-    &:hover {
-        background-color: #d0d0d0;
-    }
-`;
-
 
 const TrashIndex = () => {
     const navigate = useNavigate();
 
-    // 초기 데이터 (예시: 3개)
-    // 실제로는 백엔드나 전역 상태에서 받아올 데이터
     const [trashList, setTrashList] = useState([
-        { id: 1, name: '아이템 이름', dDay: '지난 기한' },
-        { id: 2, name: '아이템 이름', dDay: '지난 기한' },
-        { id: 3, name: '아이템 이름', dDay: '지난 기한' },
+        { ingredients_id: 1, ingredients_name: '두부', expiration_date: '2026-02-05', status: 'DISCARDED' },
+        { ingredients_id: 2, ingredients_name: '우유', expiration_date: '2026-02-08', status: 'DISCARDED' },
+        { ingredients_id: 3, ingredients_name: '잼', expiration_date: '2025-12-30', status: 'DISCARDED' },
     ]);
 
-    // 개별 삭제 핸들러
-    const handleDelete = (id) => {
-        setTrashList((prev) => prev.filter((item) => item.id !== id));
+    const handleDelete = (ingredients_id) => {
+        setTrashList((prev) => prev.filter((item) => item.ingredients_id !== ingredients_id));
     };
 
-    // 전체 삭제 핸들러
     const handleDeleteAll = () => {
         if (window.confirm("정말로 비우시겠습니까?")) {
             setTrashList([]);
         }
     };
 
-    // 복구 핸들러 (임시)
     const handleRestore = () => {
         alert("복구 기능은 추후 구현될 예정입니다.");
     };
 
     return (
-        <Wrapper>
-            <Header>
-                <BackIcon onClick={() => navigate(-1)}>&lt;</BackIcon>
-                <HeaderTitle>쓰레기통</HeaderTitle>
-            </Header>
+        <PageWrapper>
+            <div style={{ padding: '0 20px' }}> 
+                <PageHeader title="쓰레기통" />
+            </div>
 
             <SummaryText>
                 이번 달에 총 {trashList.length}가지의 재료가 버려졌습니다 😢
@@ -173,25 +129,31 @@ const TrashIndex = () => {
                     </div>
                 ) : (
                     trashList.map((item) => (
-                        <TrashItem key={item.id}>
+                        <TrashItem key={item.ingredients_id}>
                             <ItemInfo>
-                                <ItemName>{item.name}</ItemName>
-                                <ItemDDay>{item.dDay}</ItemDDay>
+                                <ItemName>{item.ingredients_name}</ItemName>
+                                {/* 날짜 데이터 표시 */}
+                                <ItemDDay>{item.expiration_date} (만료)</ItemDDay>
                             </ItemInfo>
                             <ButtonGroup>
-                                <SmallButton onClick={handleRestore}>복구</SmallButton>
-                                <SmallButton onClick={() => handleDelete(item.id)}>삭제</SmallButton>
+                                <SmallActionButton onClick={handleRestore}>복구</SmallActionButton>
+                                <SmallActionButton onClick={() => handleDelete(item.ingredients_id)}>삭제</SmallActionButton>
                             </ButtonGroup>
                         </TrashItem>
                     ))
                 )}
-                
+                {trashList.length > 0 && (
+                     <div style={{ textAlign: 'center', padding: '20px', fontSize: '20px', color: '#aaa' }}>⋮</div>
+                )}
             </ListContainer>
 
             <Footer>
-                <DeleteAllButton onClick={handleDeleteAll}>전체 삭제</DeleteAllButton>
+                {/* 공통 PrimaryButton 사용 (색상 통일) */}
+                <PrimaryButton onClick={handleDeleteAll}>
+                    전체 삭제
+                </PrimaryButton>
             </Footer>
-        </Wrapper>
+        </PageWrapper>
     );
 };
 

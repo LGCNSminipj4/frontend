@@ -2,99 +2,21 @@ import React, { useState, useEffect } from "react";
 import styled, { keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
 
-const Wrapper = styled.div`
-    max-width: 375px;
-    margin: 0 auto;
-    width: 100%;
-    min-height: 100vh;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    padding-bottom: 40px;
-    position: relative;
-`;
+import { 
+  Container, 
+  InputGroup, 
+  Label, 
+  StyledInput, 
+  StyledSelect,
+  PrimaryButton,
+  ChipButton
+} from "../../../components/common/CommonStyles"; 
 
-const Header = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    position: relative;
-    margin-bottom: 10px;
-`;
-
-const BackIcon = styled.div`
-    position: absolute;
-    left: 16px;
-    cursor: pointer;
-    font-size: 20px;
-    color: #888;
-`;
-
-const HeaderTitle = styled.h1`
-    font-size: 18px;
-    font-weight: normal;
-    color: #000;
-    margin: 0;
-`;
-
-const Content = styled.div`
-    padding: 0 20px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-`;
-
-const UserName = styled.h2`
-    font-size: 24px;
-    font-weight: 500;
-    margin-bottom: 30px;
-    color: #222;
-`;
-
-const InputSection = styled.div`
-    margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-    display: block;
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 8px;
-`;
-
-const TextInput = styled.input`
-    width: 100%;
-    padding: 12px;
-    border: 1px solid ${(props) => (props.isError ? "#ff0000" : "#ccc")};
-    border-radius: 4px;
-    font-size: 14px;
-    box-sizing: border-box;
-    color: #333;
-
-    &::placeholder {
-        color: #aaa;
-    }
-`;
+import PageHeader from "../../../components/common/PageHeader";
 
 const DateGroup = styled.div`
     display: flex;
     gap: 10px;
-`;
-
-const DateSelect = styled.select`
-    flex: 1;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #fff;
-    color: ${(props) => (props.value === "" ? "#aaa" : "#333")};
-    font-size: 14px;
-`;
-
-const TagSection = styled.div`
-    margin-bottom: 24px;
 `;
 
 const TagGrid = styled.div`
@@ -103,38 +25,7 @@ const TagGrid = styled.div`
     gap: 8px;
 `;
 
-const TagButton = styled.button`
-    padding: 8px 16px;
-    background-color: ${(props) => (props.isActive ? "#333" : "#fff")};
-    color: ${(props) => (props.isActive ? "#fff" : "#333")};
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-        border-color: #333;
-    }
-`;
-
-const SaveButton = styled.button`
-    width: 100%;
-    padding: 16px;
-    background-color: #f5f5f5;
-    border: 1px solid #000;
-    border-radius: 6px;
-    font-size: 16px;
-    color: #000;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 20px;
-
-    &:hover {
-        background-color: #e0e0e0;
-    }
-`;
-
+// 토스트 애니메이션
 const fadeInOut = keyframes`
   0% { opacity: 0; transform: translate(-50%, 20px); }
   10% { opacity: 1; transform: translate(-50%, 0); }
@@ -180,7 +71,9 @@ const MyPageEdit = () => {
         lifestyle: []
     });
 
+    // 토스트 상태 및 메시지 관리
     const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
 
     const isPasswordMismatch = password && confirmPw && password !== confirmPw;
 
@@ -196,6 +89,7 @@ const MyPageEdit = () => {
     };
 
     const handleSave = () => {
+        // 1. 빈 값 체크
         if (
             !password ||
             !confirmPw ||
@@ -207,15 +101,28 @@ const MyPageEdit = () => {
             selectedTags.method.length === 0 ||
             selectedTags.lifestyle.length === 0
         ) {
+            setToastMessage("모두 작성해 주세요");
             setShowToast(true);
             return;
         }
 
+        // 2. 비밀번호 불일치 체크
         if (isPasswordMismatch) {
             return;
         }
 
-        navigate('/mypage'); 
+        // 3. 성공 처리 (토스트 띄우고 이동)
+        setToastMessage("회원정보가 수정되었습니다.");
+        setShowToast(true);
+
+        setTimeout(() => {
+            navigate('/mypage', { replace: true }); 
+        }, 1500); // 1.5초 후 이동
+    };
+
+    const handleDateChange = (e) => {
+        const { name, value } = e.target;
+        setBirthDate(prev => ({ ...prev, [name]: value }));
     };
 
     useEffect(() => {
@@ -227,120 +134,114 @@ const MyPageEdit = () => {
         }
     }, [showToast]);
 
-    const handleDateChange = (e) => {
-        const { name, value } = e.target;
-        setBirthDate(prev => ({ ...prev, [name]: value }));
-    };
-
     return (
-        <Wrapper>
-            <Header>
-                <BackIcon onClick={() => navigate(-1)}>&lt;</BackIcon>
-                <HeaderTitle>마이페이지</HeaderTitle>
-            </Header>
+        <Container>
+            <PageHeader title="마이페이지" />
 
-            <Content>
-                <UserName>xx님</UserName>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '20px' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: '500', marginBottom: '30px', color: '#222' }}>
+                    xx님
+                </h2>
 
-                <InputSection>
+                <InputGroup>
                     <Label>새 비밀번호</Label>
-                    <TextInput 
+                    <StyledInput 
                         type="password" 
                         placeholder="비밀번호 입력 (문자, 숫자, 특수문자 포함 8~20자)" 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                </InputSection>
+                </InputGroup>
 
-                <InputSection>
+                <InputGroup>
                     <Label>새 비밀번호 확인</Label>
-                    <TextInput 
+                    <StyledInput 
                         type="password" 
                         placeholder="비밀번호 재입력" 
                         value={confirmPw}
                         onChange={(e) => setConfirmPw(e.target.value)}
-                        isError={isPasswordMismatch}
+                        $isError={isPasswordMismatch}
                     />
-                </InputSection>
+                </InputGroup>
 
-                <InputSection>
+                <InputGroup>
                     <Label>이름</Label>
-                    <TextInput 
+                    <StyledInput 
                         type="text" 
                         placeholder="이름을 입력해주세요" 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
-                </InputSection>
+                </InputGroup>
 
-                <InputSection>
+                <InputGroup>
                     <Label>생년월일</Label>
                     <DateGroup>
-                        <DateSelect name="year" value={birthDate.year} onChange={handleDateChange}>
+                        <StyledSelect name="year" value={birthDate.year} onChange={handleDateChange}>
                             <option value="" disabled>년도</option>
                             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                        </DateSelect>
-                        <DateSelect name="month" value={birthDate.month} onChange={handleDateChange}>
+                        </StyledSelect>
+                        <StyledSelect name="month" value={birthDate.month} onChange={handleDateChange}>
                             <option value="" disabled>월</option>
                             {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                        </DateSelect>
-                        <DateSelect name="day" value={birthDate.day} onChange={handleDateChange}>
+                        </StyledSelect>
+                        <StyledSelect name="day" value={birthDate.day} onChange={handleDateChange}>
                             <option value="" disabled>일</option>
                             {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-                        </DateSelect>
+                        </StyledSelect>
                     </DateGroup>
-                </InputSection>
+                </InputGroup>
 
-                <TagSection>
+                <InputGroup>
                     <Label>요리 문화 (중복 선택 가능)</Label>
                     <TagGrid>
                         {["한식", "일식", "양식", "중식", "아시안"].map((tag) => (
-                            <TagButton
+                            <ChipButton
                                 key={tag}
-                                isActive={selectedTags.culture.includes(tag)}
+                                $isActive={selectedTags.culture.includes(tag)}
                                 onClick={() => toggleTag("culture", tag)}
                             >
                                 {tag}
-                            </TagButton>
+                            </ChipButton>
                         ))}
                     </TagGrid>
-                </TagSection>
+                </InputGroup>
 
-                <TagSection>
+                <InputGroup>
                     <Label>조리 방식 (중복 선택 가능)</Label>
                     <TagGrid>
                         {["볶음", "국/찌개", "구이", "생식", "조림/찜"].map((tag) => (
-                            <TagButton
+                            <ChipButton
                                 key={tag}
-                                isActive={selectedTags.method.includes(tag)}
+                                $isActive={selectedTags.method.includes(tag)}
                                 onClick={() => toggleTag("method", tag)}
                             >
                                 {tag}
-                            </TagButton>
+                            </ChipButton>
                         ))}
                     </TagGrid>
-                </TagSection>
+                </InputGroup>
 
-                <TagSection>
+                <InputGroup>
                     <Label>라이프 스타일 (중복 선택 가능)</Label>
                     <TagGrid>
                         {["초간단", "한그릇", "술안주", "도시락", "다이어트"].map((tag) => (
-                            <TagButton
+                            <ChipButton
                                 key={tag}
-                                isActive={selectedTags.lifestyle.includes(tag)}
+                                $isActive={selectedTags.lifestyle.includes(tag)}
                                 onClick={() => toggleTag("lifestyle", tag)}
                             >
                                 {tag}
-                            </TagButton>
+                            </ChipButton>
                         ))}
                     </TagGrid>
-                </TagSection>
+                </InputGroup>
 
-                <SaveButton onClick={handleSave}>저장</SaveButton>
-            </Content>
+                <PrimaryButton onClick={handleSave}>저장</PrimaryButton>
+            </div>
 
-            {showToast && <ToastMessage>모두 작성해 주세요</ToastMessage>}
-        </Wrapper>
+            {showToast && <ToastMessage>{toastMessage}</ToastMessage>}
+        </Container>
     );
 };
 

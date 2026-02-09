@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // [추가] 페이지 이동 훅
-import './FridgeIndex.css'; // [확인] 이 파일이 같은 폴더에 있어야 함
+import { useNavigate } from 'react-router-dom'; 
+import './FridgeIndex.css'; 
 import { 
   FiMenu, FiPlusCircle, FiTrash2, 
   FiUser, FiLogOut, FiAlertTriangle 
 } from 'react-icons/fi';
 
 const FridgeIndex = () => {
-  const navigate = useNavigate(); // [추가] navigate 함수 선언
+  const navigate = useNavigate(); 
 
   // --- 상태 관리 ---
   const [userName, setUserName] = useState('XX');
   const [activeTab, setActiveTab] = useState('냉장');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
-  // [추가] 팝업 및 선택된 아이템 상태 선언 (에러 해결)
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 

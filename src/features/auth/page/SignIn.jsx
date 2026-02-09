@@ -1,8 +1,10 @@
 import React from 'react';
 import './SignIn.css';
 import { FiUser, FiLock } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 const SignIn = () => {
+  const navigate = useNavigate();
   return (
     <div className="signin-container">
       <div className="logo-section">
@@ -24,7 +26,7 @@ const SignIn = () => {
 
       <div className="btn-group">
         <button className="btn-login">로그인</button>
-        <button className="btn-signup">회원가입</button>
+        <button className="btn-signup" onClick={() => navigate('/signup')}>회원가입</button>
       </div>
     </div>
   );
