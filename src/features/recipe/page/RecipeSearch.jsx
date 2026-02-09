@@ -126,31 +126,25 @@ const DeleteAllButton = styled.button`
     }
 `;
 
-
 const TrashIndex = () => {
     const navigate = useNavigate();
 
-    // 초기 데이터 (예시: 3개)
-    // 실제로는 백엔드나 전역 상태에서 받아올 데이터
     const [trashList, setTrashList] = useState([
-        { id: 1, name: '아이템 이름', dDay: '지난 기한' },
-        { id: 2, name: '아이템 이름', dDay: '지난 기한' },
-        { id: 3, name: '아이템 이름', dDay: '지난 기한' },
+        { ingredients_id: 1, ingredients_name: '두부', expiration_date: '2026-02-05', status: 'DISCARDED' },
+        { ingredients_id: 2, ingredients_name: '우유', expiration_date: '2026-02-08', status: 'DISCARDED' },
+        { ingredients_id: 3, ingredients_name: '잼', expiration_date: '2025-12-30', status: 'DISCARDED' },
     ]);
 
-    // 개별 삭제 핸들러
-    const handleDelete = (id) => {
-        setTrashList((prev) => prev.filter((item) => item.id !== id));
+    const handleDelete = (ingredients_id) => {
+        setTrashList((prev) => prev.filter((item) => item.ingredients_id !== ingredients_id));
     };
 
-    // 전체 삭제 핸들러
     const handleDeleteAll = () => {
         if (window.confirm("정말로 비우시겠습니까?")) {
             setTrashList([]);
         }
     };
 
-    // 복구 핸들러 (임시)
     const handleRestore = () => {
         alert("복구 기능은 추후 구현될 예정입니다.");
     };
@@ -173,19 +167,22 @@ const TrashIndex = () => {
                     </div>
                 ) : (
                     trashList.map((item) => (
-                        <TrashItem key={item.id}>
+                        <TrashItem key={item.ingredients_id}>
                             <ItemInfo>
-                                <ItemName>{item.name}</ItemName>
-                                <ItemDDay>{item.dDay}</ItemDDay>
+                                <ItemName>{item.ingredients_name}</ItemName>
+                                {/* 날짜 데이터 표시 */}
+                                <ItemDDay>{item.expiration_date} (만료)</ItemDDay>
                             </ItemInfo>
                             <ButtonGroup>
                                 <SmallButton onClick={handleRestore}>복구</SmallButton>
-                                <SmallButton onClick={() => handleDelete(item.id)}>삭제</SmallButton>
+                                <SmallButton onClick={() => handleDelete(item.ingredients_id)}>삭제</SmallButton>
                             </ButtonGroup>
                         </TrashItem>
                     ))
                 )}
-                
+                {trashList.length > 0 && (
+                     <div style={{ textAlign: 'center', padding: '20px', fontSize: '20px', color: '#aaa' }}>⋮</div>
+                )}
             </ListContainer>
 
             <Footer>
