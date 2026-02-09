@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import './IngredientEdit.css';
 import { FiChevronLeft } from 'react-icons/fi';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const IngredientEdit = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const item = location.state || {};  
+
   const [ingredient, setIngredient] = useState({
     name: '',
     amount: '',

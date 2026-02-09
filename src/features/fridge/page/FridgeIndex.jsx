@@ -96,6 +96,22 @@ const FridgeIndex = () => {
           )}
         </div>
       </div>
+
+      {isPopupOpen && (
+        <div className="popup-overlay" onClick={() => setIsPopupOpen(false)}>
+          <div className="selection-popup" onClick={(e) => e.stopPropagation()}>
+            <h3>기능 선택</h3>
+            <div className="popup-btn-group">
+              <button className="popup-btn" onClick={() => navigate('/edit', { state: selectedItem })}>
+                재료 수정
+              </button>
+              <button className="popup-btn" onClick={() => navigate('/recipe', { state: { ingredient: selectedItem.name } })}>
+                레시피 검색
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
