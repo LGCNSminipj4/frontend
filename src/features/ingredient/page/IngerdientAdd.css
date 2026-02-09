@@ -1,0 +1,82 @@
+.add-container {
+  max-width: 375px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  min-height: 100vh;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.add-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 35px;
+  position: relative;
+}
+
+.add-header h2 {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.back-icon {
+  cursor: pointer;
+  position: absolute;
+  left: 0;
+  color: #555;
+}
+
+.input-group {
+  margin-bottom: 25px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.input-group input, 
+.input-group select {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.row, .date-row {
+  display: flex;
+  gap: 12px;
+}
+
+.half, .date-row select {
+  flex: 1;
+}
+
+.add-btn-container {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+}
+
+.submit-btn {
+  background-color: #d9d9d9;
+  border: none;
+  padding: 15px 70px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #ccc;
+}
