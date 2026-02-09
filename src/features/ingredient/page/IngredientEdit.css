@@ -1,4 +1,6 @@
 .add-container {
+  max-width: 375px;
+  margin: 0 auto;
   padding: 20px;
   background-color: #fff;
   min-height: 100vh;
