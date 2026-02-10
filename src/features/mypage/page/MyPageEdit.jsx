@@ -1,243 +1,198 @@
-import React, { useState, useEffect } from "react";
-import styled, { keyframes } from "styled-components";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './EditProfile.css'; 
 
-import { 
-  Container, 
-  InputGroup, 
-  Label, 
-  StyledInput, 
-  StyledSelect,
-  PrimaryButton,
-  ChipButton
-} from "../../../components/common/CommonStyles"; 
+const EditProfile = () => {
+  const navigate = useNavigate();
 
-import PageHeader from "../../../components/common/PageHeader";
+  // 1. 상태 관리 (데이터)
+  const [formData, setFormData] = useState({
+    newPassword: '',
+    confirmPassword: '',
+    name: '김코딩',
+    year: '2000'
+  });
 
-// --- 스타일 수정 및 추가 ---
+  const [selectedCultures, setSelectedCultures] = useState(['한식']);
+  const [selectedMethods, setSelectedMethods] = useState(['구이']);
+  const [selectedLifeStyles, setSelectedLifeStyles] = useState(['도시락']);
+  const [showToast, setShowToast] = useState(false);
 
-const DateGroup = styled.div`
-    display: flex;
-    gap: 10px;
-`;
+  const cultures = ['한식', '일식', '양식', '중식', '아시안'];
+  const methods = ['볶음', '국/찌개', '구이', '생식', '조림/찜'];
+  const lifeStyles = ['초간단', '한그릇', '술안주', '도시락', '다이어트'];
+  const years = Array.from({ length: 100 }, (_, i) => 2026 - i);
 
-// 기본 화살표를 보이게 하는 확장 스타일
-const ArrowSelect = styled(StyledSelect)`
-    appearance: auto; 
-    -webkit-appearance: menulist;
-    padding-right: 10px;
-`;
+  const isPasswordMismatch = formData.newPassword && formData.confirmPassword && (formData.newPassword !== formData.confirmPassword);
 
-const TagGrid = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-`;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
-// 토스트 애니메이션
-const fadeInOut = keyframes`
-  0% { opacity: 0; transform: translate(-50%, 20px); }
-  10% { opacity: 1; transform: translate(-50%, 0); }
-  90% { opacity: 1; transform: translate(-50%, 0); }
-  100% { opacity: 0; transform: translate(-50%, 20px); }
-`;
+  const toggleSelection = (item, selectedList, setList) => {
+    if (selectedList.includes(item)) {
+      setList(selectedList.filter((i) => i !== item));
+    } else {
+      setList([...selectedList, item]);
+    }
+  };
 
-const ToastMessage = styled.div`
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 20px;
-    font-size: 14px;
-    z-index: 1000;
-    white-space: nowrap;
-    animation: ${fadeInOut} 2s ease-in-out forwards;
-`;
+  // --- 저장 버튼 핸들러 (수정됨) ---
+  const handleSave = () => {
+    // 유효성 검사
+    if (!formData.name) {
+      alert("이름은 필수 항목입니다.");
+      return;
+    }
+    if (isPasswordMismatch) {
+      alert("새 비밀번호가 일치하지 않습니다.");
+      return;
+    }
 
-const YEARS = Array.from({ length: 100 }, (_, i) => 2026 - i);
+    // [나중에 백엔드 연동할 위치]
+    console.log("저장 데이터:", { ...formData, selectedCultures, selectedMethods, selectedLifeStyles });
 
-const MyPageEdit = () => {
-    const navigate = useNavigate();
+    setShowToast(true);
 
-    const [password, setPassword] = useState("");
-    const [confirmPw, setConfirmPw] = useState("");
-    const [name, setName] = useState("");
-    
-    const [birthDate, setBirthDate] = useState({
-        year: ""
-    });
+    setTimeout(() => {
+        navigate('/mypage'); 
+    }, 1500);
+  };
 
-    const [selectedTags, setSelectedTags] = useState({
-        culture: [],
-        method: [],
-        lifestyle: []
-    });
+  // 토스트 메시지 타이머 (메시지 자체를 안 보이게 하는 로직)
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
-    // 토스트 상태 및 메시지 관리
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState("");
+  return (
+    <div className="edit-container">
+      {/* 헤더 */}
+      <div className="header-area">
+        <button className="back-btn" onClick={() => navigate(-1)}>&lt;</button>
+        <h1 className="title">마이페이지</h1>
+      </div>
 
-    const isPasswordMismatch = password && confirmPw && password !== confirmPw;
+      {/* 인사말 */}
+      <div className="greeting-area">
+        <span className="user-name">{formData.name}</span>
+        <span className="user-suffix">님</span>
+      </div>
 
-    const toggleTag = (category, tag) => {
-        setSelectedTags((prev) => {
-            const currentList = prev[category];
-            if (currentList.includes(tag)) {
-                return { ...prev, [category]: currentList.filter((t) => t !== tag) };
-            } else {
-                return { ...prev, [category]: [...currentList, tag] };
-            }
-        });
-    };
+      <div className="form-content">
+        
+        {/* 새 비밀번호 */}
+        <div className="input-group">
+          <label>새 비밀번호</label>
+          <input 
+            type="password" 
+            name="newPassword"
+            className="main-input" 
+            placeholder="비밀번호 입력 (문자, 숫자, 특수문자 포함 8~20자)" 
+            value={formData.newPassword}
+            onChange={handleChange}
+          />
+        </div>
 
-    const handleSave = () => {
-        // 1. 빈 값 체크
-        if (
-            !password ||
-            !confirmPw ||
-            !name ||
-            !birthDate.year ||
-            selectedTags.culture.length === 0 ||
-            selectedTags.method.length === 0 ||
-            selectedTags.lifestyle.length === 0
-        ) {
-            setToastMessage("모두 작성해 주세요");
-            setShowToast(true);
-            return;
-        }
+        {/* 새 비밀번호 확인 */}
+        <div className="input-group">
+          <label>새 비밀번호 확인</label>
+          <input 
+            type="password" 
+            name="confirmPassword"
+            // 에러 시 빨간 테두리 클래스 추가
+            className={`main-input ${isPasswordMismatch ? 'input-error' : ''}`} 
+            placeholder="비밀번호 재입력" 
+            value={formData.confirmPassword}
+            onChange={handleChange}
+          />
+        </div>
 
-        // 2. 비밀번호 불일치 체크
-        if (isPasswordMismatch) {
-            return;
-        }
+        {/* 이름 */}
+        <div className="input-group">
+          <label>이름</label>
+          <input 
+            type="text" 
+            name="name"
+            className="main-input" 
+            placeholder="이름을 입력해주세요" 
+            value={formData.name}
+            onChange={handleChange}
+          />
+        </div>
 
-        // 3. 성공 처리 (토스트 띄우고 이동)
-        setToastMessage("회원정보가 수정되었습니다.");
-        setShowToast(true);
+        {/* 출생 연도 */}
+        <div className="input-group">
+          <label>출생 연도</label>
+          <select name="year" className="main-input" value={formData.year} onChange={handleChange}>
+            <option value="">년도</option>
+            {years.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
 
-        setTimeout(() => {
-            navigate('/mypage', { replace: true }); 
-        }, 1500); // 1.5초 후 이동
-    };
+        {/* 요리 문화 */}
+        <div className="input-group">
+          <label>요리 문화</label>
+          <div className="chip-container">
+            {cultures.map((item) => (
+              <button
+                key={item}
+                className={`chip-button ${selectedCultures.includes(item) ? 'selected' : ''}`}
+                onClick={() => toggleSelection(item, selectedCultures, setSelectedCultures)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
 
-    const handleDateChange = (e) => {
-        const { name, value } = e.target;
-        setBirthDate(prev => ({ ...prev, [name]: value }));
-    };
+        {/* 조리 방식 */}
+        <div className="input-group">
+          <label>조리 방식</label>
+          <div className="chip-container">
+            {methods.map((item) => (
+              <button
+                key={item}
+                className={`chip-button ${selectedMethods.includes(item) ? 'selected' : ''}`}
+                onClick={() => toggleSelection(item, selectedMethods, setSelectedMethods)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
 
-    useEffect(() => {
-        if (showToast) {
-            const timer = setTimeout(() => {
-                setShowToast(false);
-            }, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [showToast]);
+        {/* 라이프 스타일 */}
+        <div className="input-group">
+          <label>라이프 스타일</label>
+          <div className="chip-container">
+            {lifeStyles.map((item) => (
+              <button
+                key={item}
+                className={`chip-button ${selectedLifeStyles.includes(item) ? 'selected' : ''}`}
+                onClick={() => toggleSelection(item, selectedLifeStyles, setSelectedLifeStyles)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
 
-    return (
-        <Container>
-            <PageHeader title="마이페이지" />
+        {/* 저장 버튼 */}
+        <button className="submit-button" onClick={handleSave}>저장</button>
+      </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '20px' }}>
-                <h2 style={{ fontSize: '24px', fontWeight: '500', marginBottom: '30px', color: '#222' }}>
-                    xx님
-                </h2>
-
-                <InputGroup>
-                    <Label>새 비밀번호</Label>
-                    <StyledInput 
-                        type="password" 
-                        placeholder="비밀번호 입력 (문자, 숫자, 특수문자 포함 8~20자)" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </InputGroup>
-
-                <InputGroup>
-                    <Label>새 비밀번호 확인</Label>
-                    <StyledInput 
-                        type="password" 
-                        placeholder="비밀번호 재입력" 
-                        value={confirmPw}
-                        onChange={(e) => setConfirmPw(e.target.value)}
-                        $isError={isPasswordMismatch}
-                    />
-                </InputGroup>
-
-                <InputGroup>
-                    <Label>이름</Label>
-                    <StyledInput 
-                        type="text" 
-                        placeholder="이름을 입력해주세요" 
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                </InputGroup>
-
-                <InputGroup>
-                    <Label>출생 연도</Label>
-                    <DateGroup>
-                        <ArrowSelect name="year" value={birthDate.year} onChange={handleDateChange}>
-                            <option value="" disabled>년도</option>
-                            {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                        </ArrowSelect>
-                    </DateGroup>
-                </InputGroup>
-
-                <InputGroup>
-                    <Label>요리 문화 (중복 선택 가능)</Label>
-                    <TagGrid>
-                        {["한식", "일식", "양식", "중식", "아시안"].map((tag) => (
-                            <ChipButton
-                                key={tag}
-                                $isActive={selectedTags.culture.includes(tag)}
-                                onClick={() => toggleTag("culture", tag)}
-                            >
-                                {tag}
-                            </ChipButton>
-                        ))}
-                    </TagGrid>
-                </InputGroup>
-
-                <InputGroup>
-                    <Label>조리 방식 (중복 선택 가능)</Label>
-                    <TagGrid>
-                        {["볶음", "국/찌개", "구이", "생식", "조림/찜"].map((tag) => (
-                            <ChipButton
-                                key={tag}
-                                $isActive={selectedTags.method.includes(tag)}
-                                onClick={() => toggleTag("method", tag)}
-                            >
-                                {tag}
-                            </ChipButton>
-                        ))}
-                    </TagGrid>
-                </InputGroup>
-
-                <InputGroup>
-                    <Label>라이프 스타일 (중복 선택 가능)</Label>
-                    <TagGrid>
-                        {["초간단", "한그릇", "술안주", "도시락", "다이어트"].map((tag) => (
-                            <ChipButton
-                                key={tag}
-                                $isActive={selectedTags.lifestyle.includes(tag)}
-                                onClick={() => toggleTag("lifestyle", tag)}
-                            >
-                                {tag}
-                            </ChipButton>
-                        ))}
-                    </TagGrid>
-                </InputGroup>
-
-                <PrimaryButton onClick={handleSave}>저장</PrimaryButton>
-            </div>
-
-            {showToast && <ToastMessage>{toastMessage}</ToastMessage>}
-        </Container>
-    );
+      {/* 토스트 팝업 */}
+      {showToast && (
+        <div className="toast-message">
+          정보가 저장되었습니다.
+        </div>
+      )}
+    </div>
+  );
 };
 
-export default MyPageEdit;
+export default EditProfile;
