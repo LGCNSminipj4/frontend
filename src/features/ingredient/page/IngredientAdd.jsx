@@ -74,7 +74,7 @@ const IngredientAdd = () => {
     const [showToast, setShowToast] = useState(false);
     const [toastText, setToastText] = useState("");
 
-    const years = Array.from({ length: 11 }, (_, i) => 2026 - i);
+    const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
     const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
     const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 

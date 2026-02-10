@@ -66,7 +66,7 @@ const IngredientEdit = () => {
         category: ''
     });
 
-    const years = Array.from({ length: 11 }, (_, i) => 2026 - i);
+    const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
