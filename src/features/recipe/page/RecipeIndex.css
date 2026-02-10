@@ -1,0 +1,179 @@
+
+:root {
+  --color-primary: #00C4B4;      /* 버튼 민트색 */
+  --color-bg: #F8F9FA;           /* 배경색 */
+  --color-white: #FFFFFF;
+  --color-text-main: #333333;
+  --color-text-sub: #888888;
+  --color-border: #EEEEEE;
+  --color-star: #F2C94C;         /* 별점 노란색 */
+}
+
+/* 전체 페이지 래퍼 */
+.recipe-page-wrapper {
+  max-width: 375px;
+  margin: 0 auto;
+  background-color: var(--color-white);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 헤더 패딩 */
+.header-padding {
+  padding: 0 20px;
+}
+
+/* 탭 컨테이너 */
+.tab-container {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  flex-shrink: 0;
+}
+
+/* 탭 버튼 */
+.tab-button {
+  flex: 1;
+  text-align: center;
+  padding: 14px 0;
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--color-text-sub);
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-button.active {
+  color: var(--color-text-main);
+  font-weight: 700;
+  border-bottom: 2px solid var(--color-text-main);
+}
+
+/* 스크롤 영역 */
+.scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 리스트 아이템 */
+.recipe-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+}
+
+.recipe-item:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+/* 아이템 좌측 (썸네일 + 정보) */
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+/* 썸네일 박스 */
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #aaa;
+  flex-shrink: 0;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 정보 박스 */
+.info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item-title {
+  font-size: 15px;
+  color: var(--color-text-main);
+  font-weight: 500;
+}
+
+.item-desc {
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+/* 즐겨찾기 별 아이콘 */
+.star-icon {
+  font-size: 24px;
+  padding: 8px;
+  cursor: pointer;
+  color: #ddd;
+  transition: color 0.2s;
+}
+
+.star-icon.favorite {
+  color: var(--color-star); 
+}
+
+/* 데이터 없음 메시지 */
+.empty-message {
+  text-align: center;
+  margin-top: 100px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* 하단 고정 버튼 영역 */
+.fixed-bottom {
+  padding: 16px 20px 40px 20px;
+  background-color: var(--color-bg);
+  border-top: 1px solid #f5f5f5;
+  flex-shrink: 0;
+}
+
+/* 메인 버튼 스타일 (수정됨) */
+.primary-button {
+  width: 100%;
+  padding: 16px;
+  background-color: var(--color-primary); 
+  color: var(--color-white);
+  border: none;
+  border-radius: 6px; 
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.primary-button:hover {
+  opacity: 0.9;
+}
+
+.primary-button:active {
+  transform: scale(0.98);
+}
