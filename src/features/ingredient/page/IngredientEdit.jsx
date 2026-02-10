@@ -66,7 +66,7 @@ const IngredientEdit = () => {
         category: ''
     });
 
-    const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
+    const years = Array.from({ length: 11 }, (_, i) => 2026 - i);
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
@@ -166,14 +166,11 @@ const IngredientEdit = () => {
                 </InputGroup>
 
                 <InputGroup>
-                    <Label>카테고리</Label>
-                    <StyledSelect name="category" value={ingredient.category} onChange={handleChange}>
-                        <option value="">카테고리 선택</option>
-                        <option value="유제품">유제품</option>
-                        <option value="고기">고기</option>
-                        <option value="채소">채소</option>
-                        <option value="과일">과일</option>
-                        <option value="기타">기타</option>
+                    <Label>보관 방식</Label>
+                    <StyledSelect name="storageType" value={ingredient.storageType} onChange={handleChange}>
+                        <option value="냉장">냉장</option>
+                        <option value="냉동">냉동</option>
+                        <option value="실온">실온</option>
                     </StyledSelect>
                 </InputGroup>
 
