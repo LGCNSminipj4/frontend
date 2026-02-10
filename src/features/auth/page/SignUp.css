@@ -101,18 +101,21 @@
 
 .chip-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  width: 100%;
 }
 
 .chip-button {
-  padding: 8px 14px;
+  flex: 1;
+  padding: 8px 4px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: #fff;
   color: #333;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .chip-button.selected {
