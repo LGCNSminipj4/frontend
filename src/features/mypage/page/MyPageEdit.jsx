@@ -14,9 +14,18 @@ import {
 
 import PageHeader from "../../../components/common/PageHeader";
 
+// --- 스타일 수정 및 추가 ---
+
 const DateGroup = styled.div`
     display: flex;
     gap: 10px;
+`;
+
+// 기본 화살표를 보이게 하는 확장 스타일
+const ArrowSelect = styled(StyledSelect)`
+    appearance: auto; 
+    -webkit-appearance: menulist;
+    padding-right: 10px;
 `;
 
 const TagGrid = styled.div`
@@ -48,9 +57,7 @@ const ToastMessage = styled.div`
     animation: ${fadeInOut} 2s ease-in-out forwards;
 `;
 
-const YEARS = Array.from({ length: 101 }, (_, i) => 1926 + i);
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
-const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+const YEARS = Array.from({ length: 100 }, (_, i) => 2026 - i);
 
 const MyPageEdit = () => {
     const navigate = useNavigate();
@@ -60,9 +67,7 @@ const MyPageEdit = () => {
     const [name, setName] = useState("");
     
     const [birthDate, setBirthDate] = useState({
-        year: "",
-        month: "",
-        day: ""
+        year: ""
     });
 
     const [selectedTags, setSelectedTags] = useState({
@@ -95,8 +100,6 @@ const MyPageEdit = () => {
             !confirmPw ||
             !name ||
             !birthDate.year ||
-            !birthDate.month ||
-            !birthDate.day ||
             selectedTags.culture.length === 0 ||
             selectedTags.method.length === 0 ||
             selectedTags.lifestyle.length === 0
@@ -175,20 +178,12 @@ const MyPageEdit = () => {
                 </InputGroup>
 
                 <InputGroup>
-                    <Label>생년월일</Label>
+                    <Label>출생 연도</Label>
                     <DateGroup>
-                        <StyledSelect name="year" value={birthDate.year} onChange={handleDateChange}>
+                        <ArrowSelect name="year" value={birthDate.year} onChange={handleDateChange}>
                             <option value="" disabled>년도</option>
                             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                        </StyledSelect>
-                        <StyledSelect name="month" value={birthDate.month} onChange={handleDateChange}>
-                            <option value="" disabled>월</option>
-                            {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-                        </StyledSelect>
-                        <StyledSelect name="day" value={birthDate.day} onChange={handleDateChange}>
-                            <option value="" disabled>일</option>
-                            {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-                        </StyledSelect>
+                        </ArrowSelect>
                     </DateGroup>
                 </InputGroup>
 

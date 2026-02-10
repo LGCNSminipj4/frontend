@@ -11,9 +11,7 @@ const SignUp = () => {
     password: '',
     confirmPassword: '',
     name: '',
-    year: '',
-    month: '',
-    day: ''
+    year: ''
   });
 
   const [selectedCultures, setSelectedCultures] = useState([]);
@@ -27,11 +25,9 @@ const SignUp = () => {
   const methods = ['볶음', '국/찌개', '구이', '생식', '조림/찜'];
   const lifeStyles = ['초간단', '한그릇', '술안주', '도시락', '다이어트'];
 
-  // 생년월일 데이터 생성
-  const years = Array.from({ length: 100 }, (_, i) => 2024 - i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-
+  // 출생 연도 데이터 생성
+  const years = Array.from({ length: 100 }, (_, i) => 2026 - i);
+  
   // 비밀번호 불일치 여부 확인 (둘 다 입력되었을 때만 체크)
   const isPasswordMismatch = formData.password && formData.confirmPassword && (formData.password !== formData.confirmPassword);
 
@@ -59,8 +55,6 @@ const SignUp = () => {
       !formData.confirmPassword ||
       !formData.name ||
       !formData.year ||
-      !formData.month ||
-      !formData.day ||
       selectedCultures.length === 0 ||
       selectedMethods.length === 0 ||
       selectedLifeStyles.length === 0
@@ -151,19 +145,11 @@ const SignUp = () => {
         </div>
 
         <div className="input-group">
-          <label>생년월일</label>
+          <label>출생 연도</label>
           <div className="birth-row">
             <select name="year" className="main-input" value={formData.year} onChange={handleChange}>
               <option value="">년도</option>
               {years.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-            <select name="month" className="main-input" value={formData.month} onChange={handleChange}>
-              <option value="">월</option>
-              {months.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
-            <select name="day" className="main-input" value={formData.day} onChange={handleChange}>
-              <option value="">일</option>
-              {days.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
         </div>
