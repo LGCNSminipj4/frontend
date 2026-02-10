@@ -5,6 +5,7 @@ import {
   FiMenu, FiPlusCircle, FiTrash2, 
   FiUser, FiLogOut, FiAlertTriangle 
 } from 'react-icons/fi';
+import logoImg from '../../../components/images/Fridge.png';
 
 const FridgeIndex = () => {
   const navigate = useNavigate(); 
@@ -70,8 +71,7 @@ const FridgeIndex = () => {
       {/* --- 헤더 --- */}
       <header className="fridge-header">
         <div className="logo-area">
-          <span className="logo-sub">(로고)</span>
-          <span className="logo-main">냉장고를 부탁해</span>
+          <img src={logoImg} alt="Fridge.png" className="header-logo" />
         </div>
         <FiMenu size={28} className="menu-icon" onClick={() => setIsDrawerOpen(true)} />
       </header>
