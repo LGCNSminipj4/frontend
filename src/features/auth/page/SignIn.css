@@ -7,12 +7,21 @@
   justify-content: center;
   min-height: 100vh;
   padding: 0 40px;
-  background-color: #ffffff;
+  background-color: #F8F9FA;
 }
 
 .logo-section {
-  text-align: center;
-  margin-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.main-logo {
+  width: 240px;
+  height: auto;
+  object-fit: contain;
 }
 
 .logo-section .logo-text {
@@ -66,17 +75,18 @@
 .btn-login {
   width: 100%;
   padding: 14px;
-  background-color: transparent;
-  border: 1px solid #cccccc;
+  background-color: #00C4B4;
+  border: none;
   border-radius: 8px;
-  color: #666;
+  color: white;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .btn-login:hover {
-  background-color: #f9f9f9;
+  background-color: #B2D4D1;
+  border: 1px solid #00C4B4;
 }
 
 .btn-signup {
