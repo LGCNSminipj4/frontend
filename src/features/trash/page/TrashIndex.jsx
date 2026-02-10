@@ -2,158 +2,161 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-import { Container, PrimaryButton } from '../../../components/common/CommonStyles';
+// 방금 만든 CommonStyles에서 필요한 것들 import
+import { 
+  Container, 
+  ContentArea, 
+  PrimaryButton, 
+  SmallButton, 
+  COLORS, 
+  ListItem, 
+  ItemInfo, 
+  ItemName, 
+  ItemDday 
+} from '../../../components/common/CommonStyles';
+
 import PageHeader from '../../../components/common/PageHeader';
 
-// --- 페이지 전용 스타일 ---
-
-const PageWrapper = styled(Container)`
-    padding: 0;
-    height: 100vh;
-    min-height: unset;
-    overflow: hidden;
-`;
+// --- 페이지 전용 스타일 커스텀 ---
 
 // 상단 요약 텍스트
 const SummaryText = styled.div`
-    text-align: center;
-    padding: 30px 0;
-    font-size: 15px;
-    color: #333;
+  text-align: center;
+  padding: 30px 0;
+  font-size: 15px;
+  color: ${COLORS.textMain};
 `;
 
-// 스크롤 가능한 리스트 영역
-const ListContainer = styled.div`
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 24px;
-    
-    &::-webkit-scrollbar {
-        display: none;
-    }
+// 리스트 아이템 레이아웃 재정의 (버튼 그룹과 배치 맞추기 위해)
+const StyledListItem = styled(ListItem)`
+  padding: 20px 0;
 `;
 
-const TrashItem = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 0;
-    border-bottom: 1px solid #eee;
-
-    &:last-child {
-        border-bottom: none;
-    }
+// 버튼들을 담을 그룹
+const ActionButtonGroup = styled.div`
+  display: flex;
+  gap: 8px;
 `;
 
-const ItemInfo = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+// '삭제'용 빨간 버튼 (SmallButton 스타일 상속받고 배경색만 변경)
+const DeleteButton = styled(SmallButton)`
+  background-color: ${COLORS.error}; /* #FF6B6B */
+  color: ${COLORS.white};
+  padding: 8px 16px; /* 이미지처럼 사이즈 조절 */
+  font-weight: 500;
+  
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
-const ItemName = styled.span`
-    font-size: 16px;
-    color: #333;
-    font-weight: 500;
+// '복구'용 민트 버튼 (SmallButton 스타일 상속, 기본이 민트색이라 패딩만 조절)
+const RestoreButton = styled(SmallButton)`
+  padding: 8px 16px;
+  font-weight: 500;
 `;
 
-const ItemDDay = styled.span`
-    font-size: 14px;
-    color: #ff4d4f; /* 붉은색 텍스트 */
+// 하단 '전체 삭제' 빨간 버튼 (PrimaryButton 스타일 상속)
+const DeleteAllButton = styled(PrimaryButton)`
+  background-color: ${COLORS.error};
+  margin-top: 0; /* Footer 패딩이 처리하므로 */
 `;
 
-const ButtonGroup = styled.div`
-    display: flex;
-    gap: 10px;
-`;
-
-// 로컬 작은 버튼 (복구/삭제)
-const SmallActionButton = styled.button`
-    padding: 8px 16px;
-    background-color: #e0e0e0; /* 회색 버튼 배경 */
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-
-    &:hover {
-        background-color: #d0d0d0;
-    }
-`;
-
-// 하단 버튼 영역 고정
+// 하단 버튼 영역
 const Footer = styled.div`
-    padding: 20px 24px 40px 24px;
-    flex-shrink: 0;
-    background-color: #fff; /* 배경색 지정으로 리스트와 겹침 방지 */
+  padding: 20px 0 40px 0;
+  background-color: ${COLORS.background};
+`;
+
+// 하단 점 3개 장식
+const DotsIndicator = styled.div`
+  text-align: center;
+  padding: 30px 0;
+  font-size: 24px;
+  color: #ddd;
+  font-weight: bold;
+  letter-spacing: 2px;
 `;
 
 const TrashIndex = () => {
     const navigate = useNavigate();
 
+    // 데이터 예시 (이미지처럼 D-day 계산된 상태라고 가정하거나, 날짜로 계산)
     const [trashList, setTrashList] = useState([
-        { ingredients_id: 1, ingredients_name: '두부', expiration_date: '2026-02-05', status: 'DISCARDED' },
-        { ingredients_id: 2, ingredients_name: '우유', expiration_date: '2026-02-08', status: 'DISCARDED' },
-        { ingredients_id: 3, ingredients_name: '잼', expiration_date: '2025-12-30', status: 'DISCARDED' },
+        { ingredients_id: 1, ingredients_name: '두부', d_day: 'D+4' },
+        { ingredients_id: 2, ingredients_name: '우유', d_day: 'D+1' },
+        { ingredients_id: 3, ingredients_name: '잼', d_day: 'D+11' },
     ]);
 
+    // 개별 삭제
     const handleDelete = (ingredients_id) => {
-        setTrashList((prev) => prev.filter((item) => item.ingredients_id !== ingredients_id));
+        if (window.confirm("정말 삭제하시겠습니까?")) {
+            setTrashList((prev) => prev.filter((item) => item.ingredients_id !== ingredients_id));
+        }
     };
 
+    // 전체 삭제
     const handleDeleteAll = () => {
-        if (window.confirm("정말로 비우시겠습니까?")) {
+        if (trashList.length === 0) return;
+        if (window.confirm("휴지통을 비우시겠습니까? 복구할 수 없습니다.")) {
             setTrashList([]);
         }
     };
 
-    const handleRestore = () => {
-        alert("복구 기능은 추후 구현될 예정입니다.");
+    // 복구 (기능 예시)
+    const handleRestore = (name) => {
+        alert(`[${name}] 재료가 냉장고로 복구되었습니다.`);
+        // 실제 로직: API 호출 후 리스트에서 제거 등
     };
 
     return (
-        <PageWrapper>
-            <div style={{ padding: '0 20px' }}> 
-                <PageHeader title="쓰레기통" />
-            </div>
+        <Container>
+            {/* 1. 헤더 */}
+            <PageHeader title="쓰레기통" />
 
-            <SummaryText>
-                이번 달에 총 {trashList.length}가지의 재료가 버려졌습니다 😢
-            </SummaryText>
+            {/* 2. 스크롤 가능한 메인 영역 */}
+            <ContentArea>
+                <SummaryText>
+                    이번 달에 총 {trashList.length}가지의 재료가 버려졌습니다 😢
+                </SummaryText>
 
-            <ListContainer>
                 {trashList.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: '#aaa', marginTop: '50px' }}>
+                    <div style={{ textAlign: 'center', color: '#aaa', marginTop: '100px' }}>
                         쓰레기통이 비었습니다.
                     </div>
                 ) : (
-                    trashList.map((item) => (
-                        <TrashItem key={item.ingredients_id}>
-                            <ItemInfo>
-                                <ItemName>{item.ingredients_name}</ItemName>
-                                {/* 날짜 데이터 표시 */}
-                                <ItemDDay>{item.expiration_date} (만료)</ItemDDay>
-                            </ItemInfo>
-                            <ButtonGroup>
-                                <SmallActionButton onClick={handleRestore}>복구</SmallActionButton>
-                                <SmallActionButton onClick={() => handleDelete(item.ingredients_id)}>삭제</SmallActionButton>
-                            </ButtonGroup>
-                        </TrashItem>
-                    ))
+                    <>
+                        {trashList.map((item) => (
+                            <StyledListItem key={item.ingredients_id}>
+                                <ItemInfo>
+                                    <ItemName>{item.ingredients_name}</ItemName>
+                                    {/* $isDanger props를 주어 빨간색 텍스트 적용 */}
+                                    <ItemDday $isDanger={true}>{item.d_day}</ItemDday>
+                                </ItemInfo>
+                                
+                                <ActionButtonGroup>
+                                    <RestoreButton onClick={() => handleRestore(item.ingredients_name)}>
+                                        복구
+                                    </RestoreButton>
+                                    <DeleteButton onClick={() => handleDelete(item.ingredients_id)}>
+                                        삭제
+                                    </DeleteButton>
+                                </ActionButtonGroup>
+                            </StyledListItem>
+                        ))}
+                        
+                        
+                    </>
                 )}
-                {trashList.length > 0 && (
-                     <div style={{ textAlign: 'center', padding: '20px', fontSize: '20px', color: '#aaa' }}>⋮</div>
-                )}
-            </ListContainer>
+            </ContentArea>
 
+            {/* 3. 하단 고정 버튼 영역 */}
             <Footer>
-                {/* 공통 PrimaryButton 사용 (색상 통일) */}
-                <PrimaryButton onClick={handleDeleteAll}>
+                <DeleteAllButton onClick={handleDeleteAll}>
                     전체 삭제
-                </PrimaryButton>
+                </DeleteAllButton>
             </Footer>
-        </PageWrapper>
+        </Container>
     );
 };
 
