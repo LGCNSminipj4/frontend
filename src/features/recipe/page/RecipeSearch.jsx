@@ -68,7 +68,7 @@ const RecipeSearch = () => {
 
         setIsSearched(true);
 
-        /* [API 연동: ] 
+        /* [API 연동: RQ-0019/0021] 
            검색 필터를 쿼리 파라미터로 전송
         */
         // 더미 데이터 주석 처리
@@ -80,7 +80,7 @@ const RecipeSearch = () => {
             isFavorite: false
         })));
         */
-       setResults([]); 
+       setResults([]); // 실제 연동 전 빈 배열
     };
 
     const handleToggleFavorite = (id) => {
@@ -145,16 +145,20 @@ const RecipeSearch = () => {
                                 <ItemLeft>
                                     <Thumbnail>썸네일</Thumbnail>
                                     <InfoBox>
+                                        {/* API 응답 키: RECIPE_NM_KO, SUMRY */}
                                         <ItemTitle>{activeTab === 'text' ? `[텍스트] ${item.RECIPE_NM_KO}` : `[영상] ${item.RECIPE_NM_KO}`}</ItemTitle>
                                         <ItemLink>{item.SUMRY}</ItemLink>
                                     </InfoBox>
                                 </ItemLeft>
-                                <StarIcon 
+                                
+                                {/* 즐겨찾기 주석 처리 */}
+                                {/* <StarIcon 
                                     $isFavorite={item.isFavorite}
                                     onClick={() => handleToggleFavorite(item.RECIPE_ID)}
                                 >
                                     {item.isFavorite ? "★" : "☆"}
                                 </StarIcon>
+                                */}
                             </RecipeItem>
                         ))}
                     </ScrollArea>

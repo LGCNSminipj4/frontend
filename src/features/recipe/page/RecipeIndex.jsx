@@ -31,7 +31,7 @@ const RecipeIndex = () => {
 
     // 탭 변경 시 데이터 로드
     useEffect(() => {
-        /* [API 연동: 텍스트,  유튜브] 
+        /* [API 연동: RQ-0019 텍스트, RQ-0021 유튜브] 
            백엔드 요청 시 필터링 파라미터 전달 필요 (type=text or youtube)
         */
         
@@ -41,8 +41,8 @@ const RecipeIndex = () => {
         if (activeTab === 'text') {
             dummyData = Array.from({ length: 10 }, (_, i) => ({
                 RECIPE_ID: i,
-                RECIPE_NM_KO: `자취생을 위한 초간단 요리 ${i + 1}탄`, // title -> RECIPE_NM_KO
-                SUMRY: `소요시간: ${10 + i}분`, // description -> SUMRY
+                RECIPE_NM_KO: `자취생을 위한 초간단 요리 ${i + 1}탄`, 
+                SUMRY: `소요시간: ${10 + i}분`, 
                 LEVEL_NM: i % 3 === 0 ? '상' : '하',
                 isFavorite: i % 3 === 0, 
             }));
@@ -57,7 +57,7 @@ const RecipeIndex = () => {
         setRecipeList(dummyData);
         */
        
-       setRecipeList([]); 
+       setRecipeList([]); // 연동 전 빈 배열
 
     }, [activeTab]);
 
@@ -109,6 +109,8 @@ const RecipeIndex = () => {
                             </CardInfo>
                         </CardLeft>
                         
+                        {/* 즐겨찾기 주석 처리 */}
+                        {/*
                         <StarIcon 
                             $active={item.isFavorite}
                             onClick={(e) => {
@@ -118,6 +120,7 @@ const RecipeIndex = () => {
                         >
                             ★
                         </StarIcon>
+                        */}
                     </RecipeCard>
                 ))}
             </ScrollableContent>

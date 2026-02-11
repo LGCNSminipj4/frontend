@@ -30,7 +30,7 @@ const MyPageIndex = () => {
     useEffect(() => {
         const fetchMyPageData = async () => {
             try {
-                // [API 호출:회원정보조회]
+                // [API 호출: 회원정보조회]
                 /*
                 const res = await axios.get('/api/users/mypage');
                 setUserInfo({
@@ -84,7 +84,8 @@ const MyPageIndex = () => {
     }
 
     return (
-        <Container>
+        // [수정] 전체 화면을 꽉 채우고 위아래로 배치하기 위해 flex 스타일 적용
+        <Container style={{ display: 'flex', flexDirection: 'column', height: '100vh', boxSizing: 'border-box' }}>
             <PageHeader title="마이페이지" />
 
             <UserGreetingArea>
@@ -97,7 +98,8 @@ const MyPageIndex = () => {
                 회원정보 수정
             </FullWidthButton>
 
-            <Section>
+            {/* [수정 1] 즐겨찾기 섹션 주석 처리 (삭제 대신 주석) */}
+            {/* <Section>
                 <SectionHeader>&lt; 레시피 즐겨찾기 &gt;</SectionHeader>
                 <MintBox>
                     {userInfo.favorites.length > 0 ? (
@@ -115,12 +117,14 @@ const MyPageIndex = () => {
                         </EmptyMessage>
                     )}
                 </MintBox>
-            </Section>
+            </Section> 
+            */}
 
-            {/* 알림 섹션 */}
-            <Section>
+            {/* [수정 2] 알림 섹션이 남은 공간을 모두 차지하도록 flex: 1 적용 */}
+            <Section style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, marginBottom: '20px' }}>
                 <SectionHeader>&lt; 알림 &gt;</SectionHeader>
-                <MintBox>
+                {/* MintBox도 꽉 차게 flex: 1 및 스크롤 처리 */}
+                <MintBox style={{ flex: 1, overflowY: 'auto' }}>
                     {userInfo.notifications.length > 0 ? (
                         userInfo.notifications.map(noti => (
                             <TranslucentItem key={noti.id}>
