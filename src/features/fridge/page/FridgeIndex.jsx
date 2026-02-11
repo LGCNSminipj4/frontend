@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './FridgeIndex.css'; 
 import { 
   FiMenu, FiPlusCircle, FiTrash2, 
-  FiUser, FiLogOut, FiAlertTriangle 
+  FiUser, FiLogOut, FiAlertTriangle, 
+  FiCheck
 } from 'react-icons/fi';
 import logoImg from '../../../components/images/Fridge.png';
 
@@ -47,6 +48,10 @@ const FridgeIndex = () => {
             <li onClick={() => navigate('/ingredient/add')}>
               <span>재료 추가</span>
               <FiPlusCircle size={22} />
+            </li>
+            <li onClick={() => navigate('/consumption')}>
+              <span>소비완료</span>
+              <FiCheck size={22} />
             </li>
             <li onClick={() => navigate('/trash')}>
               <span>쓰레기통</span>

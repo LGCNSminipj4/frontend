@@ -125,7 +125,7 @@
   width: 80%;
   max-width: 320px;
   height: 100%;
-  background-color: white;
+  background-color: #F5FAFB;
   z-index: 1000;
   transition: right 0.3s ease-in-out;
   display: flex;
@@ -172,7 +172,7 @@
   padding: 25px 0;
   font-size: 20px;
   font-weight: 500;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #B1B1B1;
   cursor: pointer;
   color: #333;
 }
@@ -188,13 +188,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #e0e0e0;
+  background-color: #00C4B4;
   border: none;
   padding: 10px 18px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: bold;
-  color: #333;
+  color: #FFFFFF;
   cursor: pointer;
 }
 
