@@ -25,8 +25,8 @@ const TabContainer = styled.div` display: flex; width: 100%; border-bottom: 1px 
 const TabButton = styled.div` flex: 1; text-align: center; padding: 14px 0; font-size: 15px; cursor: pointer; color: ${(props) => (props.$isActive ? "#333" : "#aaa")}; font-weight: ${(props) => (props.$isActive ? "bold" : "normal")}; border-bottom: ${(props) => (props.$isActive ? "2px solid #333" : "2px solid transparent")}; transition: all 0.2s; `;
 const ScrollArea = styled.div` flex: 1; overflow-y: auto; padding: 20px 16px; &::-webkit-scrollbar { display: none; } `;
 const RecipeItem = styled.div` display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid #eee; &:last-child { margin-bottom: 0; border-bottom: none; } `;
-const ItemLeft = styled.div` display: flex; align-items: center; gap: 16px; `;
-const Thumbnail = styled.div` width: 80px; height: 80px; background-color: #e0e0e0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; text-align: center; line-height: 1.2; `;
+const ItemLeft = styled.div` display: flex; align-items: center; gap: 16px; cursor: pointer; `; // 클릭 가능하도록 cursor 추가
+const Thumbnail = styled.div` width: 80px; height: 80px; background-color: #e0e0e0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; text-align: center; line-height: 1.2; overflow: hidden; `; // 이미지 넘침 방지
 const InfoBox = styled.div` display: flex; flex-direction: column; gap: 6px; `;
 const ItemTitle = styled.div` font-size: 15px; color: #333; font-weight: 500; `;
 const ItemLink = styled.div` font-size: 13px; color: #888; `;
@@ -67,26 +67,15 @@ const RecipeSearch = () => {
         }
 
         setIsSearched(true);
-
-        /* [API 연동: RQ-0019/0021] 
-           검색 필터를 쿼리 파라미터로 전송
-        */
-        // 더미 데이터 주석 처리
-        /*
-        setResults(Array.from({ length: 10 }, (_, i) => ({
-            RECIPE_ID: i,
-            RECIPE_NM_KO: `검색된 레시피 ${i + 1} (${filters.culture})`, // title -> RECIPE_NM_KO
-            SUMRY: '상세보기',
-            isFavorite: false
-        })));
-        */
-       setResults([]); // 실제 연동 전 빈 배열
+        // [API 연동 시] 여기서 백엔드 호출 후 setResults(response.data)
+        setResults([]); // 실제 연동 전 빈 배열
     };
 
-    const handleToggleFavorite = (id) => {
-        setResults(prev => prev.map(item => 
-            item.RECIPE_ID === id ? { ...item, isFavorite: !item.isFavorite } : item
-        ));
+    // 유튜브 링크 이동용
+    const handleItemClick = (item) => {
+        if (activeTab === 'youtube' && item.link) {
+            window.open(item.link, '_blank');
+        }
     };
 
     useEffect(() => {
@@ -140,21 +129,45 @@ const RecipeSearch = () => {
                     </TabContainer>
 
                     <ScrollArea>
-                        {results.map((item) => (
-                            <RecipeItem key={item.RECIPE_ID}>
-                                <ItemLeft>
-                                    <Thumbnail>썸네일</Thumbnail>
+                        {results.map((item, index) => (
+                            <RecipeItem key={item.RECIPE_ID || index}>
+                                <ItemLeft onClick={() => handleItemClick(item)}>
+                                    <Thumbnail>
+                                        {activeTab === 'youtube' ? (
+                                            <img 
+                                                src={item.thumbnail} 
+                                                alt="thumb" 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                            />
+                                        ) : (
+                                            "썸네일" 
+                                        )}
+                                    </Thumbnail>
+                                    
                                     <InfoBox>
-                                        {/* API 응답 키: RECIPE_NM_KO, SUMRY */}
-                                        <ItemTitle>{activeTab === 'text' ? `[텍스트] ${item.RECIPE_NM_KO}` : `[영상] ${item.RECIPE_NM_KO}`}</ItemTitle>
-                                        <ItemLink>{item.SUMRY}</ItemLink>
+                                        <ItemTitle>
+                                            {activeTab === 'text' 
+                                                ? `[텍스트] ${item.RECIPE_NM_KO}` 
+                                                : `[영상] ${item.title}`}
+                                        </ItemTitle>
+                                        
+                                        <ItemLink>
+                                            {activeTab === 'text' 
+                                                ? item.SUMRY 
+                                                : (
+                                                    <span style={{ color: 'blue', textDecoration: 'underline' }}>
+                                                        영상 보러가기
+                                                    </span>
+                                                )
+                                            }
+                                        </ItemLink>
                                     </InfoBox>
                                 </ItemLeft>
                                 
-                                {/* 즐겨찾기 주석 처리 */}
+                                {/* 즐겨찾기(별) 아이콘 주석 처리 */}
                                 {/* <StarIcon 
                                     $isFavorite={item.isFavorite}
-                                    onClick={() => handleToggleFavorite(item.RECIPE_ID)}
+                                    onClick={() => {}}
                                 >
                                     {item.isFavorite ? "★" : "☆"}
                                 </StarIcon>
