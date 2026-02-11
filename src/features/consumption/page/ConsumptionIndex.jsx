@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+
+import api from '../../../api/axios';
+
 import PageHeader from '../../../components/common/PageHeader'; 
 import {
   Container,
@@ -24,19 +27,51 @@ const ConsumedDate = styled.div`
   font-weight: 500;
 `;
 
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: #888;
+  margin-top: 50px;
+  font-size: 14px;
+`;
+
 const ConsumptionIndex = () => {
-  /* 더미 데이터 - 주석 처리
-     DB 컬럼: ingredients_id, ingredients_name, expiration_date (또는 소비일)
-  const consumedList = [
-    { ingredients_id: 1, ingredients_name: '두부', expiration_date: '2026.02.11' },
-    { ingredients_id: 2, ingredients_name: '우유', expiration_date: '2026.02.09' },
-    { ingredients_id: 3, ingredients_name: '잼', expiration_date: '2026.02.09' },
-  ];
-  */
-  
-  const consumedList = []; 
+  // 상태 관리 (목록, 로딩)
+  const [consumedList, setConsumedList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // [API 연동] 화면 켜질 때 소비 기록 불러오기
+  useEffect(() => {
+    const fetchConsumedList = async () => {
+      try {
+        setIsLoading(true);
+        // GET 백엔드 주소가 '/ingredients/consumed'라고 가정
+        const response = await api.get('/ingredients/consumed');
+        
+        console.log("소비 완료 목록:", response.data);
+        setConsumedList(response.data);
+
+      } catch (error) {
+        console.error("소비 목록 로드 실패:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchConsumedList();
+  }, []);
 
   const totalCount = consumedList.length;
+
+  if (isLoading) {
+    return (
+      <Container>
+        <PageHeader title="소비 완료" />
+        <ContentArea style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <div>기록을 불러오는 중...</div>
+        </ContentArea>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -47,17 +82,26 @@ const ConsumptionIndex = () => {
           이번 달에 총 {totalCount}가지의 재료를 소비하였습니다
         </SummaryText>
 
-        <div style={{ padding: '0 10px' }}>
-          {consumedList.map((item) => (
-            <ListItem key={item.ingredients_id}>
-              <ItemInfo>
-                <ItemName>{item.ingredients_name}</ItemName>
-                {/* 날짜 필드는 백엔드 응답 키에 따라 조정 (여기선 expiration_date로 가정) */}
-                <ConsumedDate>{item.expiration_date}</ConsumedDate>
-              </ItemInfo>
-            </ListItem>
-          ))}
-        </div>
+        {totalCount === 0 ? (
+            <EmptyMessage>아직 소비한 내역이 없습니다.</EmptyMessage>
+        ) : (
+            <div style={{ padding: '0 10px' }}>
+            {consumedList.map((item) => (
+                <ListItem key={item.ingredients_id}>
+                <ItemInfo>
+                    <ItemName>{item.ingredients_name}</ItemName>
+                    {/* 백엔드에서 주는 날짜 필드명이 'expiration_date'인지, 
+                        'consumed_date'(소비일)인지 확인 필요합니다.
+                        일단 기존 코드대로 expiration_date로 둡니다.
+                    */}
+                    <ConsumedDate>
+                        {item.consumed_date || item.expiration_date}
+                    </ConsumedDate>
+                </ItemInfo>
+                </ListItem>
+            ))}
+            </div>
+        )}
       </ContentArea>
     </Container>
   );
