@@ -37,7 +37,6 @@ const ToastMessage = styled.div`
     animation: ${slideUp} 0.3s ease-out;
 `;
 
-// 커스텀 모달 스타일
 const ModalOverlay = styled.div`
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -96,9 +95,17 @@ const FlexRow = styled.div`
 const EditButtonGroup = styled.div`
     margin-top: 50px;
     display: flex;
-    justify-content: center;
+    flex-direction: column; // 세로 정렬로 변경하여 밑에 추가하기 용이하게 함
+    align-items: center;
     gap: 15px;
     padding-bottom: 30px;
+`;
+
+const MainButtons = styled.div`
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
 `;
 
 const ActionButton = styled.button`
@@ -109,17 +116,26 @@ const ActionButton = styled.button`
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    background-color: #d9d9d9;
-    color: #333;
+    background-color: #00C4B4;
+    color: #FFFFFF;
     transition: background 0.2s;
 
-    &:hover { background-color: #ccc; }
+    &:hover { background-color: #00a89a; }
 
     ${(props) => props.$isDelete && `
+        background-color: #00C4B4;
+        color: #FFFFFF;
         &:hover {
             background-color: #f28d8d;
-            color: white;
+            color: #FFFFFF;
         }
+    `}
+
+    ${(props) => props.$isFullWidth && `
+        width: 295px;
+        background-color: #00C4B4;
+        color: #FFFFFF;
+        &:hover { background-color: #00a89a; }
     `}
 `;
 
@@ -164,8 +180,17 @@ const IngredientEdit = () => {
         if (!ingredient.expYear || !ingredient.expMonth || !ingredient.expDay) return triggerToast('소비기한을 모두 선택해주세요.');
         if (!ingredient.storageType) return triggerToast('보관 방식을 선택해주세요.');
 
-        triggerToast('성공적으로 저장되었습니다!');
+        triggerToast('성공적으로 저장되었습니다.');
         setTimeout(() => navigate('/fridge'), 1500);
+    };
+
+    const handleConsumption = () => {
+        // 실제 연동 시: await api.moveToConsumption(ingredient.id);
+        triggerToast(`${ingredient.name || '재료'}가 모두 소비 되었습니다.`);
+        
+        setTimeout(() => {
+            navigate('/fridge');
+        }, 1500);
     };
 
     const confirmDelete = () => {
@@ -249,8 +274,13 @@ const IngredientEdit = () => {
                 </InputGroup>
 
                 <EditButtonGroup>
-                    <ActionButton type="button" $isDelete onClick={() => setShowDeleteModal(true)}>재료 삭제</ActionButton>
-                    <ActionButton type="submit">저장</ActionButton>
+                    <MainButtons>
+                        <ActionButton type="button" $isDelete onClick={() => setShowDeleteModal(true)}>재료 삭제</ActionButton>
+                        <ActionButton type="submit">저장</ActionButton>
+                    </MainButtons>
+                    <ActionButton type="button" $isFullWidth onClick={handleConsumption}>
+                        소비 완료
+                    </ActionButton>
                 </EditButtonGroup>
             </form>
 
