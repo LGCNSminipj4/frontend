@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import { 
     Container, 
@@ -11,7 +11,81 @@ import {
 } from '../../../components/common/CommonStyles';
 import PageHeader from '../../../components/common/PageHeader';
 
-// --- 페이지 전용 스타일 ---
+// --- 애니메이션 ---
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const slideUp = keyframes`
+  from { transform: translate(-50%, 20px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+`;
+
+// --- 스타일 컴포넌트 ---
+const ToastMessage = styled.div`
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    z-index: 3000;
+    white-space: nowrap;
+    animation: ${slideUp} 0.3s ease-out;
+`;
+
+const ModalOverlay = styled.div`
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: ${fadeIn} 0.2s ease-out;
+`;
+
+const ModalContent = styled.div`
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    width: 80%;
+    max-width: 300px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+`;
+
+const ModalTitle = styled.div`
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+`;
+
+const ModalButtonGroup = styled.div`
+    display: flex;
+    gap: 10px;
+`;
+
+const ModalButton = styled.button`
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    background: ${props => props.$primary ? '#333' : '#eee'};
+    color: ${props => props.$primary ? 'white' : '#666'};
+    transition: background 0.2s;
+
+    &:active {
+        background: ${props => props.$primary ? '#000' : '#ddd'};
+    }
+`;
 
 const FlexRow = styled.div`
     display: flex;
@@ -39,11 +113,8 @@ const ActionButton = styled.button`
     color: #333;
     transition: background 0.2s;
 
-    &:hover {
-        background-color: #ccc;
-    }
+    &:hover { background-color: #ccc; }
 
-    /* 삭제 버튼일 경우 빨간색 스타일 적용 (옵션) */
     ${(props) => props.$isDelete && `
         &:hover {
             background-color: #f28d8d;
@@ -54,40 +125,73 @@ const ActionButton = styled.button`
 
 const IngredientEdit = () => {
     const navigate = useNavigate();
-    const location = useLocation();
-    // const item = location.state || {}; // 실제 데이터 연동 시 사용
 
     const [ingredient, setIngredient] = useState({
         name: '',
         amount: '',
-        unit: 'ml',
+        unit: '',
+        customUnit: '',
         regYear: '', regMonth: '', regDay: '',
         expYear: '', expMonth: '', expDay: '',
-        category: ''
+        storageType: ''
     });
+    
+    const [isEtc, setIsEtc] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const [toastText, setToastText] = useState("");
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    const triggerToast = (text) => {
+        setToastText(text);
+        setShowToast(true);
+    };
+
+    useEffect(() => {
+        if (showToast) {
+            const timer = setTimeout(() => setShowToast(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [showToast]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setIngredient({ ...ingredient, [name]: value });
+        if (name === 'unit') {
+            const isUnitEtc = value === 'etc';
+            setIsEtc(isUnitEtc);
+            setIngredient(prev => ({ 
+                ...prev, 
+                unit: value, 
+                customUnit: isUnitEtc ? prev.customUnit : '' 
+            }));
+        } else {
+            setIngredient(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSave = (e) => {
         e.preventDefault();
-        if (!ingredient.name) return alert('재료명을 입력해주세요.');
-        alert('저장되었습니다!');
-        navigate('/fridge'); // 저장 후 뒤로가기
+        
+        if (!ingredient.name.trim()) return triggerToast('재료명을 입력해주세요.');
+        if (!ingredient.amount || ingredient.amount <= 0) return triggerToast('용량을 입력해주세요.');
+        if (!ingredient.unit) return triggerToast('용량의 단위를 선택해주세요.');
+        if (isEtc && !ingredient.customUnit.trim()) return triggerToast('단위를 작성해주세요.');
+        if (!ingredient.regYear || !ingredient.regMonth || !ingredient.regDay) return triggerToast('등록일을 모두 선택해주세요.');
+        if (!ingredient.expYear || !ingredient.expMonth || !ingredient.expDay) return triggerToast('소비기한을 모두 선택해주세요.');
+        if (!ingredient.storageType) return triggerToast('보관 방식을 선택해주세요.');
+
+        triggerToast('성공적으로 저장되었습니다!');
+        setTimeout(() => navigate('/fridge'), 1500);
     };
 
-    const handleDelete = () => {
-        if (window.confirm('정말 이 재료를 삭제하시겠습니까?')) {
-            alert('재료가 리스트에서 삭제되었습니다.');
-            navigate('/fridge');
-        }
+    const confirmDelete = () => {
+        setShowDeleteModal(false);
+        triggerToast('재료가 삭제되었습니다.');
+        setTimeout(() => navigate('/fridge'), 1500);
     };
+
+    const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
+    const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+    const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 
     return (
         <Container>
@@ -97,11 +201,9 @@ const IngredientEdit = () => {
                 <InputGroup>
                     <Label>재료명</Label>
                     <StyledInput 
-                        type="text" 
-                        name="name" 
+                        type="text" name="name" 
                         placeholder="재료 이름을 입력하세요" 
-                        value={ingredient.name} 
-                        onChange={handleChange} 
+                        value={ingredient.name} onChange={handleChange} 
                     />
                 </InputGroup>
 
@@ -109,24 +211,30 @@ const IngredientEdit = () => {
                     <Label>용량</Label>
                     <FlexRow>
                         <StyledInput 
-                            type="number" 
-                            name="amount" 
-                            placeholder="0" 
-                            value={ingredient.amount} 
-                            onChange={handleChange} 
-                            style={{ flex: 1 }}
+                            type="number" name="amount" 
+                            placeholder="0" value={ingredient.amount} 
+                            onChange={handleChange} style={{ flex: 1 }}
                         />
                         <StyledSelect 
-                            name="unit" 
-                            value={ingredient.unit} 
-                            onChange={handleChange} 
-                            style={{ flex: 1 }}
+                            name="unit" value={ingredient.unit} 
+                            onChange={handleChange} style={{ flex: 1 }}
                         >
+                            <option value="">선택</option>
                             <option value="ml">ml</option>
                             <option value="g">g</option>
                             <option value="개">개</option>
+                            <option value="etc">기타</option>
                         </StyledSelect>
                     </FlexRow>
+                    {isEtc && (
+                        <StyledInput
+                            type="text" name="customUnit"
+                            placeholder="단위를 직접 입력하세요"
+                            value={ingredient.customUnit}
+                            onChange={handleChange}
+                            style={{ marginTop: '8px' }}
+                        />
+                    )}
                 </InputGroup>
 
                 <InputGroup>
@@ -134,15 +242,15 @@ const IngredientEdit = () => {
                     <FlexRow>
                         <StyledSelect name="regYear" value={ingredient.regYear} onChange={handleChange}>
                             <option value="">년도</option>
-                            {years.map(y => <option key={y} value={y}>{y}년</option>)}
+                            {years.map(y => <option key={y} value={String(y)}>{y}년</option>)}
                         </StyledSelect>
                         <StyledSelect name="regMonth" value={ingredient.regMonth} onChange={handleChange}>
                             <option value="">월</option>
-                            {months.map(m => <option key={m} value={m < 10 ? `0${m}` : m}>{m}월</option>)}
+                            {months.map(m => <option key={m} value={m}>{m}월</option>)}
                         </StyledSelect>
                         <StyledSelect name="regDay" value={ingredient.regDay} onChange={handleChange}>
                             <option value="">일</option>
-                            {days.map(d => <option key={d} value={d < 10 ? `0${d}` : d}>{d}일</option>)}
+                            {days.map(d => <option key={d} value={d}>{d}일</option>)}
                         </StyledSelect>
                     </FlexRow>
                 </InputGroup>
@@ -152,15 +260,15 @@ const IngredientEdit = () => {
                     <FlexRow>
                         <StyledSelect name="expYear" value={ingredient.expYear} onChange={handleChange}>
                             <option value="">년도</option>
-                            {years.map(y => <option key={y} value={y}>{y}년</option>)}
+                            {years.map(y => <option key={y} value={String(y)}>{y}년</option>)}
                         </StyledSelect>
                         <StyledSelect name="expMonth" value={ingredient.expMonth} onChange={handleChange}>
                             <option value="">월</option>
-                            {months.map(m => <option key={m} value={m < 10 ? `0${m}` : m}>{m}월</option>)}
+                            {months.map(m => <option key={m} value={m}>{m}월</option>)}
                         </StyledSelect>
                         <StyledSelect name="expDay" value={ingredient.expDay} onChange={handleChange}>
                             <option value="">일</option>
-                            {days.map(d => <option key={d} value={d < 10 ? `0${d}` : d}>{d}일</option>)}
+                            {days.map(d => <option key={d} value={d}>{d}일</option>)}
                         </StyledSelect>
                     </FlexRow>
                 </InputGroup>
@@ -168,6 +276,7 @@ const IngredientEdit = () => {
                 <InputGroup>
                     <Label>보관 방식</Label>
                     <StyledSelect name="storageType" value={ingredient.storageType} onChange={handleChange}>
+                        <option value="">선택</option>
                         <option value="냉장">냉장</option>
                         <option value="냉동">냉동</option>
                         <option value="실온">실온</option>
@@ -175,14 +284,25 @@ const IngredientEdit = () => {
                 </InputGroup>
 
                 <EditButtonGroup>
-                    <ActionButton type="button" $isDelete onClick={handleDelete}>
-                        재료 삭제
-                    </ActionButton>
-                    <ActionButton type="submit">
-                        저장
-                    </ActionButton>
+                    <ActionButton type="button" $isDelete onClick={() => setShowDeleteModal(true)}>재료 삭제</ActionButton>
+                    <ActionButton type="submit">저장</ActionButton>
                 </EditButtonGroup>
             </form>
+
+            {showDeleteModal && (
+                <ModalOverlay>
+                    <ModalContent>
+                        <ModalTitle>정말 삭제하시겠습니까?</ModalTitle>
+                        <ModalButtonGroup>
+                            <ModalButton onClick={() => setShowDeleteModal(false)}>취소</ModalButton>
+                            <ModalButton $primary onClick={confirmDelete}>삭제</ModalButton>
+                        </ModalButtonGroup>
+                    </ModalContent>
+                </ModalOverlay>
+            )}
+
+            {/* 토스트 메시지 */}
+            {showToast && <ToastMessage>{toastText}</ToastMessage>}
         </Container>
     );
 };
