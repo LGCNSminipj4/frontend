@@ -29,7 +29,7 @@ const EditProfile = () => {
     newPassword: '',
     confirmPassword: '',
     name: '김코딩',
-    year: '2000'
+    birth_year: '2000'
   });
 
   const [selectedCultures, setSelectedCultures] = useState(['한식']);
@@ -90,10 +90,8 @@ const EditProfile = () => {
 
   return (
     <Container>
-      {/* 헤더 */}
       <PageHeader title="회원정보 수정" />
 
-      {/* 인사말 */}
       <UserGreetingArea>
         <GreetingTitle>
             {formData.name}<span>님</span>
@@ -101,7 +99,6 @@ const EditProfile = () => {
       </UserGreetingArea>
 
       <ContentArea>
-        {/* 새 비밀번호 */}
         <InputGroup>
           <Label>새 비밀번호</Label>
           <StyledInput 
@@ -119,7 +116,7 @@ const EditProfile = () => {
           <StyledInput 
             type="password" 
             name="confirmPassword"
-            $isError={isPasswordMismatch} // 에러 시 빨간 테두리 props 전달
+            $isError={isPasswordMismatch} 
             placeholder="비밀번호 재입력" 
             value={formData.confirmPassword}
             onChange={handleChange}

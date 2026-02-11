@@ -22,24 +22,32 @@ import {
 const TrashIndex = () => {
   const navigate = useNavigate();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // 실제 연동 시 false로 시작하거나 로딩 처리
   const [trashList, setTrashList] = useState([]);
 
-  // 더미 데이터
+  /* 더미 데이터 - 주석 처리
   const dummyData = [
-    { ingredients_id: 1, ingredients_name: '두부', d_day: 'D+4' },
-    { ingredients_id: 2, ingredients_name: '우유', d_day: 'D+1' },
-    { ingredients_id: 3, ingredients_name: '잼', d_day: 'D+11' },
+    { ingredients_id: 1, ingredients_name: '두부', expiration_date: '2026-02-15' },
+    { ingredients_id: 2, ingredients_name: '우유', expiration_date: '2026-02-12' },
+    { ingredients_id: 3, ingredients_name: '잼', expiration_date: '2026-02-22' },
   ];
+  */
 
   useEffect(() => {
     const fetchTrashList = async () => {
       try {
-        // API 호출 시뮬레이션
+        // [API 호출: 삭제된 식재료 전체 조회]
+        // const response = await axios.get('/api/ingredients/trash');
+        // setTrashList(response.data);
+        
+        setIsLoading(false); // 연동 전 테스트를 위해 false 처리
+        
+        /* 더미 데이터 세팅 주석 
         setTimeout(() => {
           setTrashList(dummyData);
           setIsLoading(false);
         }, 500);
+        */
       } catch (error) {
         console.error("데이터 로드 실패:", error);
         setIsLoading(false);
@@ -55,13 +63,15 @@ const TrashIndex = () => {
   //  복구 핸들러
   const handleRestore = (id, name) => {
     if (window.confirm(`[${name}] 재료를 냉장고로 복구할까요?`)) {
+      // API 호출 로직 추가 필요
       setTrashList((prev) => prev.filter(item => item.ingredients_id !== id));
     }
   };
 
-  //  개별 삭제 핸들러
+  //  완전 삭제 핸들러 
   const handleDelete = (id) => {
     if (window.confirm("정말 삭제하시겠습니까? 복구할 수 없습니다.")) {
+      // API 호출 로직 추가 필요
       setTrashList((prev) => prev.filter(item => item.ingredients_id !== id));
     }
   };
@@ -70,6 +80,7 @@ const TrashIndex = () => {
   const handleDeleteAll = () => {
     if (trashList.length === 0) return;
     if (window.confirm("휴지통을 싹 비우시겠습니까?")) {
+      // API 호출 로직 추가 필요
       setTrashList([]);
     }
   };
@@ -103,7 +114,8 @@ const TrashIndex = () => {
               <TrashItem key={item.ingredients_id}>
                 <ItemInfo>
                   <ItemName>{item.ingredients_name}</ItemName>
-                  <DdayText>{item.d_day}</DdayText>
+                  {/* 소비기한 표기 (expiration_date) */}
+                  <DdayText>{item.expiration_date}</DdayText>
                 </ItemInfo>
 
                 <ActionButtonGroup>

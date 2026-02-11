@@ -29,37 +29,42 @@ const RecipeIndex = () => {
     const [activeTab, setActiveTab] = useState('text'); 
     const [recipeList, setRecipeList] = useState([]);
 
-    // 탭 변경 시 더미 데이터 즉시 로드
+    // 탭 변경 시 데이터 로드
     useEffect(() => {
+        /* [API 연동: 텍스트,  유튜브] 
+           백엔드 요청 시 필터링 파라미터 전달 필요 (type=text or youtube)
+        */
+        
+        // 더미 데이터 주석 처리
+        /*
         let dummyData = [];
-
         if (activeTab === 'text') {
-            // 텍스트 레시피 더미 데이터 10개
             dummyData = Array.from({ length: 10 }, (_, i) => ({
-                id: i,
-                title: `자취생을 위한 초간단 요리 ${i + 1}탄`,
-                description: `소요시간: ${10 + i}분 | 난이도: ${i % 3 === 0 ? '상' : '하'}`,
+                RECIPE_ID: i,
+                RECIPE_NM_KO: `자취생을 위한 초간단 요리 ${i + 1}탄`, // title -> RECIPE_NM_KO
+                SUMRY: `소요시간: ${10 + i}분`, // description -> SUMRY
+                LEVEL_NM: i % 3 === 0 ? '상' : '하',
                 isFavorite: i % 3 === 0, 
-                type: 'text'
             }));
         } else {
-            // 유튜브 영상 더미 데이터 10개
             dummyData = Array.from({ length: 10 }, (_, i) => ({
-                id: 100 + i, 
-                title: `[백종원 레시피] 절대 실패없는 메뉴 ${i + 1}`,
-                description: `조회수 ${10 + i}만회 • ${i + 1}일 전`,
+                RECIPE_ID: 100 + i, 
+                RECIPE_NM_KO: `[백종원 레시피] 절대 실패없는 메뉴 ${i + 1}`,
+                SUMRY: `조회수 ${10 + i}만회`,
                 isFavorite: i % 4 === 0,
-                type: 'youtube'
             }));
         }
-
         setRecipeList(dummyData);
+        */
+       
+       setRecipeList([]); 
+
     }, [activeTab]);
 
     const handleToggleFavorite = (id) => {
         setRecipeList((prevList) =>
             prevList.map((item) =>
-                item.id === id ? { ...item, isFavorite: !item.isFavorite } : item
+                item.RECIPE_ID === id ? { ...item, isFavorite: !item.isFavorite } : item
             )
         );
     };
@@ -70,12 +75,10 @@ const RecipeIndex = () => {
 
     return (
         <FullPageWrapper>
-            {/* 헤더 영역 (좌우 패딩 적용) */}
             <PaddingBox>
                 <PageHeader title="레시피" />
             </PaddingBox>
 
-            {/* 탭 버튼 */}
             <TabContainer>
                 <TabItem 
                     $isActive={activeTab === 'text'}
@@ -91,27 +94,26 @@ const RecipeIndex = () => {
                 </TabItem>
             </TabContainer>
 
-            {/* 리스트 영역 (스크롤 가능) */}
             <ScrollableContent>
                 {recipeList.map((item) => (
-                    <RecipeCard key={item.id}>
-                        {/* 카드 왼쪽 영역 (클릭 시 상세 이동) */}
-                        <CardLeft onClick={() => handleItemClick(item.id)}>
-                            {/* 이미지는 아직 없음, 회색 박스만 표시 */}
+                    <RecipeCard key={item.RECIPE_ID}>
+                        <CardLeft onClick={() => handleItemClick(item.RECIPE_ID)}>
                             <ThumbnailBox />
                             
                             <CardInfo>
-                                <CardTitle>{item.title}</CardTitle>
-                                <CardDesc>{item.description}</CardDesc>
+                                <CardTitle>{item.RECIPE_NM_KO}</CardTitle>
+                                <CardDesc>
+                                    {item.SUMRY} 
+                                    {item.LEVEL_NM && ` | 난이도: ${item.LEVEL_NM}`}
+                                </CardDesc>
                             </CardInfo>
                         </CardLeft>
                         
-                        {/* 즐겨찾기 별 아이콘 */}
                         <StarIcon 
                             $active={item.isFavorite}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                handleToggleFavorite(item.id);
+                                handleToggleFavorite(item.RECIPE_ID);
                             }}
                         >
                             ★
@@ -120,7 +122,6 @@ const RecipeIndex = () => {
                 ))}
             </ScrollableContent>
 
-            {/* 하단 검색 버튼 (고정) */}
             <FixedBottomArea>
                 <PrimaryButton onClick={() => navigate('/recipe/search')}>
                     다른 레시피 검색

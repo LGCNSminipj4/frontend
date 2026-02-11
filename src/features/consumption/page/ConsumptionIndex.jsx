@@ -17,23 +17,25 @@ const SummaryText = styled.div`
   color: ${COLORS.textMain};
 `;
 
-// 소비 날짜 (빨간색 텍스트)
 const ConsumedDate = styled.div`
   font-size: 14px;
-  color: ${COLORS.error}; /* #FF6B6B */
+  color: ${COLORS.error}; 
   margin-top: 6px;
   font-weight: 500;
 `;
 
 const ConsumptionIndex = () => {
-  // 백엔드 연동 전 임시 데이터 (이 재료가 '소비 완료' 처리된 날짜)
+  /* 더미 데이터 - 주석 처리
+     DB 컬럼: ingredients_id, ingredients_name, expiration_date (또는 소비일)
   const consumedList = [
-    { id: 1, name: '두부', date: '2026.02.11' },
-    { id: 2, name: '우유', date: '2026.02.09' },
-    { id: 3, name: '잼', date: '2026.02.09' },
+    { ingredients_id: 1, ingredients_name: '두부', expiration_date: '2026.02.11' },
+    { ingredients_id: 2, ingredients_name: '우유', expiration_date: '2026.02.09' },
+    { ingredients_id: 3, ingredients_name: '잼', expiration_date: '2026.02.09' },
   ];
+  */
+  
+  const consumedList = []; 
 
-  // 이번 달 소비 개수 계산 (현재는 전체 길이로 예시)
   const totalCount = consumedList.length;
 
   return (
@@ -47,10 +49,11 @@ const ConsumptionIndex = () => {
 
         <div style={{ padding: '0 10px' }}>
           {consumedList.map((item) => (
-            <ListItem key={item.id}>
+            <ListItem key={item.ingredients_id}>
               <ItemInfo>
-                <ItemName>{item.name}</ItemName>
-                <ConsumedDate>{item.date}</ConsumedDate>
+                <ItemName>{item.ingredients_name}</ItemName>
+                {/* 날짜 필드는 백엔드 응답 키에 따라 조정 (여기선 expiration_date로 가정) */}
+                <ConsumedDate>{item.expiration_date}</ConsumedDate>
               </ItemInfo>
             </ListItem>
           ))}
