@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+// import axios from 'axios'; // 나중에 연동할 때
 
 import PageHeader from '../../../components/common/PageHeader';
 
@@ -24,23 +25,43 @@ import {
 const EditProfile = () => {
   const navigate = useNavigate();
 
-  // 1. 상태 관리 (데이터)
+  // 1. 상태 관리 (초기값은 비워
   const [formData, setFormData] = useState({
     newPassword: '',
     confirmPassword: '',
-    name: '김코딩',
-    birth_year: '2000'
+    name: '',       
+    birth_year: ''  
   });
 
-  const [selectedCultures, setSelectedCultures] = useState(['한식']);
-  const [selectedMethods, setSelectedMethods] = useState(['구이']);
-  const [selectedLifeStyles, setSelectedLifeStyles] = useState(['도시락']);
+  const [selectedCultures, setSelectedCultures] = useState([]);
+  const [selectedMethods, setSelectedMethods] = useState([]);
+  const [selectedLifeStyles, setSelectedLifeStyles] = useState([]);
   const [showToast, setShowToast] = useState(false);
 
   const cultures = ['한식', '일식', '양식', '중식', '아시안'];
   const methods = ['볶음', '국/찌개', '구이', '생식', '조림/찜'];
   const lifeStyles = ['초간단', '한그릇', '술안주', '도시락', '다이어트'];
   const years = Array.from({ length: 100 }, (_, i) => 2026 - i);
+
+  /* 나중에 연동할 때
+     
+  useEffect(() => {
+    const fetchUserData = async () => {
+        try {
+            const res = await axios.get('/api/users/info');
+            setFormData({
+                name: res.data.name,
+                birth_year: res.data.birth_year,
+                newPassword: '',
+                confirmPassword: ''
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    };
+    fetchUserData();
+  }, []);
+  */
 
   // 비밀번호 불일치 여부 확인
   const isPasswordMismatch = formData.newPassword && formData.confirmPassword && (formData.newPassword !== formData.confirmPassword);
@@ -70,11 +91,22 @@ const EditProfile = () => {
       return;
     }
 
-    // [나중에 백엔드 연동할 위치]
-    console.log("저장 데이터:", { ...formData, selectedCultures, selectedMethods, selectedLifeStyles });
+    // [백엔드로 보낼 데이터 확인용 로그]
+    const payload = {
+        name: formData.name,
+        password: formData.newPassword,
+        birth_year: formData.birth_year,
+        prefer_tags: {
+            culture: selectedCultures,
+            method: selectedMethods,
+            lifestyle: selectedLifeStyles
+        }
+    };
+    
+    console.log("전송할 데이터(Payload):", payload);
 
+    // 저장 성공 
     setShowToast(true);
-
     setTimeout(() => {
         navigate('/mypage'); 
     }, 1500);
@@ -94,7 +126,8 @@ const EditProfile = () => {
 
       <UserGreetingArea>
         <GreetingTitle>
-            {formData.name}<span>님</span>
+            {/* 이름이 비어있으면 '회원'님으로 표시 */}
+            {formData.name || '회원'}<span>님</span>
         </GreetingTitle>
       </UserGreetingArea>
 
@@ -138,7 +171,11 @@ const EditProfile = () => {
         {/* 출생 연도 */}
         <InputGroup>
           <Label>출생 연도</Label>
-          <StyledSelect name="year" value={formData.year} onChange={handleChange}>
+          <StyledSelect 
+            name="birth_year" 
+            value={formData.birth_year} 
+            onChange={handleChange}
+          >
             <option value="">년도</option>
             {years.map(y => <option key={y} value={y}>{y}</option>)}
           </StyledSelect>
@@ -192,7 +229,7 @@ const EditProfile = () => {
           </ChipGrid>
         </InputGroup>
 
-        {/* 저장 버튼 (상단 여백 추가) */}
+        {/* 저장 버튼 */}
         <div style={{ marginTop: '30px' }}>
             <PrimaryButton onClick={handleSave}>저장</PrimaryButton>
         </div>
