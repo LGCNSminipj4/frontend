@@ -1,8 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './RecipeIndex.css'; 
 
 import PageHeader from '../../../components/common/PageHeader';
+
+import { 
+    PrimaryButton, 
+    TabContainer, 
+    TabItem 
+} from '../../../components/common/CommonStyles';
+
+import {
+    FullPageWrapper,
+    PaddingBox,
+    ScrollableContent,
+    RecipeCard,
+    CardLeft,
+    ThumbnailBox,
+    CardInfo,
+    CardTitle,
+    CardDesc,
+    StarIcon,
+    FixedBottomArea
+} from '../../../components/common/Styles';
 
 const RecipeIndex = () => {
     const navigate = useNavigate();
@@ -50,64 +69,64 @@ const RecipeIndex = () => {
     };
 
     return (
-        <div className="recipe-page-wrapper">
-            <div className="header-padding">
+        <FullPageWrapper>
+            {/* 헤더 영역 (좌우 패딩 적용) */}
+            <PaddingBox>
                 <PageHeader title="레시피" />
-            </div>
+            </PaddingBox>
 
             {/* 탭 버튼 */}
-            <div className="tab-container">
-                <div 
-                    className={`tab-button ${activeTab === 'text' ? 'active' : ''}`}
+            <TabContainer>
+                <TabItem 
+                    $isActive={activeTab === 'text'}
                     onClick={() => setActiveTab('text')}
                 >
                     텍스트
-                </div>
-                <div 
-                    className={`tab-button ${activeTab === 'youtube' ? 'active' : ''}`}
+                </TabItem>
+                <TabItem 
+                    $isActive={activeTab === 'youtube'}
                     onClick={() => setActiveTab('youtube')}
                 >
                     유튜브 (영상)
-                </div>
-            </div>
+                </TabItem>
+            </TabContainer>
 
-            {/* 리스트 영역 */}
-            <div className="scroll-container">
+            {/* 리스트 영역 (스크롤 가능) */}
+            <ScrollableContent>
                 {recipeList.map((item) => (
-                    <div key={item.id} className="recipe-item">
-                        <div className="item-left" onClick={() => handleItemClick(item.id)}>
+                    <RecipeCard key={item.id}>
+                        {/* 카드 왼쪽 영역 (클릭 시 상세 이동) */}
+                        <CardLeft onClick={() => handleItemClick(item.id)}>
                             {/* 이미지는 아직 없음, 회색 박스만 표시 */}
-                            <div className="thumbnail"></div>
+                            <ThumbnailBox />
                             
-                            <div className="info-box">
-                                <div className="item-title">{item.title}</div>
-                                <div className="item-desc">{item.description}</div>
-                            </div>
-                        </div>
+                            <CardInfo>
+                                <CardTitle>{item.title}</CardTitle>
+                                <CardDesc>{item.description}</CardDesc>
+                            </CardInfo>
+                        </CardLeft>
                         
-                        <div 
-                            className={`star-icon ${item.isFavorite ? 'favorite' : ''}`}
+                        {/* 즐겨찾기 별 아이콘 */}
+                        <StarIcon 
+                            $active={item.isFavorite}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleToggleFavorite(item.id);
                             }}
                         >
                             ★
-                        </div>
-                    </div>
+                        </StarIcon>
+                    </RecipeCard>
                 ))}
-            </div>
+            </ScrollableContent>
 
-            {/* 하단 검색 버튼 */}
-            <div className="fixed-bottom">
-                <button 
-                    className="primary-button" 
-                    onClick={() => navigate('/recipe/search')}
-                >
+            {/* 하단 검색 버튼 (고정) */}
+            <FixedBottomArea>
+                <PrimaryButton onClick={() => navigate('/recipe/search')}>
                     다른 레시피 검색
-                </button>
-            </div>
-        </div>
+                </PrimaryButton>
+            </FixedBottomArea>
+        </FullPageWrapper>
     );
 };
 

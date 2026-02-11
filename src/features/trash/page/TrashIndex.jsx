@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './TrashIndex.css'; // CSS 파일 임포트
+
+import PageHeader from '../../../components/common/PageHeader'; 
+import { 
+  Container, 
+  ContentArea, 
+  ItemInfo, 
+  ItemName 
+} from '../../../components/common/CommonStyles'; 
+import { 
+  EmptyMessage, 
+  TrashItem, 
+  DdayText, 
+  ActionButtonGroup, 
+  MiniButton, 
+  FixedBottomArea, 
+  DangerButton,
+  SummaryText 
+} from '../../../components/common/Styles';
 
 const TrashIndex = () => {
   const navigate = useNavigate();
 
-  // 로딩 및 데이터 상태 관리
   const [isLoading, setIsLoading] = useState(true);
   const [trashList, setTrashList] = useState([]);
 
@@ -16,7 +32,6 @@ const TrashIndex = () => {
     { ingredients_id: 3, ingredients_name: '잼', d_day: 'D+11' },
   ];
 
-  // 데이터 불러오기
   useEffect(() => {
     const fetchTrashList = async () => {
       try {
@@ -33,26 +48,25 @@ const TrashIndex = () => {
     fetchTrashList();
   }, []);
 
-  // 뒤로가기 핸들러 (PageHeader 기능)
   const handleBackClick = () => {
     navigate(-1);
   };
 
-  // 1. 복구 핸들러
+  //  복구 핸들러
   const handleRestore = (id, name) => {
     if (window.confirm(`[${name}] 재료를 냉장고로 복구할까요?`)) {
       setTrashList((prev) => prev.filter(item => item.ingredients_id !== id));
     }
   };
 
-  // 2. 개별 삭제 핸들러
+  //  개별 삭제 핸들러
   const handleDelete = (id) => {
     if (window.confirm("정말 삭제하시겠습니까? 복구할 수 없습니다.")) {
       setTrashList((prev) => prev.filter(item => item.ingredients_id !== id));
     }
   };
 
-  // 3. 전체 삭제 핸들러
+  //  전체 삭제 핸들러
   const handleDeleteAll = () => {
     if (trashList.length === 0) return;
     if (window.confirm("휴지통을 싹 비우시겠습니까?")) {
@@ -62,72 +76,64 @@ const TrashIndex = () => {
 
   if (isLoading) {
     return (
-      <div className="container">
-        <div className="content-area" style={{ justifyContent: 'center', alignItems: 'center' }}>
+      <Container>
+        <ContentArea style={{ justifyContent: 'center', alignItems: 'center' }}>
           로딩중...
-        </div>
-      </div>
+        </ContentArea>
+      </Container>
     );
   }
 
   return (
-    <div className="container">
-      {/* 헤더 영역 (PageHeader 통합) */}
-      <header className="header-wrapper">
-        <div className="back-button" onClick={handleBackClick}>
-          &lt; {/* 뒤로가기 아이콘 대신 텍스트 사용, 아이콘이 있다면 <img> 등으로 대체 */}
-        </div>
-        <h1 className="header-title">쓰레기통</h1>
-      </header>
+    <Container>
+      <PageHeader title="쓰레기통" onBackClick={handleBackClick} />
 
-      {/* 콘텐츠 영역 */}
-      <div className="content-area">
-        <div className="summary-text">
+      <ContentArea>
+        <SummaryText>
           이번 달에 총 {trashList.length}가지의 재료가 버려졌습니다 😢
-        </div>
+        </SummaryText>
 
         {trashList.length === 0 ? (
-          <div className="empty-message">
+          <EmptyMessage>
             쓰레기통이 비었습니다.
-          </div>
+          </EmptyMessage>
         ) : (
-          <div className="trash-list">
+          <div>
             {trashList.map((item) => (
-              <div key={item.ingredients_id} className="trash-list-item">
-                <div className="item-info">
-                  <span className="item-name">{item.ingredients_name}</span>
-                  <span className="item-dday">{item.d_day}</span>
-                </div>
+              <TrashItem key={item.ingredients_id}>
+                <ItemInfo>
+                  <ItemName>{item.ingredients_name}</ItemName>
+                  <DdayText>{item.d_day}</DdayText>
+                </ItemInfo>
 
-                <div className="action-btn-group">
-                  <button 
-                    className="btn-base btn-restore" 
+                <ActionButtonGroup>
+                  <MiniButton 
                     onClick={() => handleRestore(item.ingredients_id, item.ingredients_name)}
                   >
                     복구
-                  </button>
-                  <button 
-                    className="btn-base btn-delete" 
+                  </MiniButton>
+                  <MiniButton 
+                    $type="delete" 
                     onClick={() => handleDelete(item.ingredients_id)}
                   >
                     삭제
-                  </button>
-                </div>
-              </div>
+                  </MiniButton>
+                </ActionButtonGroup>
+              </TrashItem>
             ))}
           </div>
         )}
-      </div>
+      </ContentArea>
 
       {/* 하단 전체 삭제 버튼 (리스트가 있을 때만 표시) */}
       {trashList.length > 0 && (
-        <div className="footer">
-          <button className="btn-base btn-delete-all" onClick={handleDeleteAll}>
+        <FixedBottomArea>
+          <DangerButton onClick={handleDeleteAll}>
             전체 삭제
-          </button>
-        </div>
+          </DangerButton>
+        </FixedBottomArea>
       )}
-    </div>
+    </Container>
   );
 };
 

@@ -17,6 +17,7 @@ import RecipeIndex from './features/recipe/page/RecipeIndex';
 import MyPageIndex from './features/mypage/page/MyPageIndex';
 import MyPageEdit from './features/mypage/page/MyPageEdit';
 
+import ConsumptionIndex from './features/consumption/page/ConsumptionIndex';
 
 // 전체 레이아웃을 잡아주는 Wrapper 
 const AppWrapper = styled.div`
@@ -57,6 +58,9 @@ const App = () => {
                     {/* --- MyPage --- */}
                     <Route path='/mypage' element={<MyPageIndex />} />
                     <Route path='/mypage/edit' element={<MyPageEdit />} />
+
+                    {/* --- Consumption --- */}
+                    <Route path='/consumption' element={<ConsumptionIndex />} />
 
                 </Routes>
             </AppWrapper>

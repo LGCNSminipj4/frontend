@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import PageHeader from "../../../components/common/PageHeader";
-import "./MyPageIndex.css"; // CSS 파일 임포트
+
+import { Container } from "../../../components/common/CommonStyles";
+import {
+    UserGreetingArea,
+    GreetingTitle,
+    FullWidthButton,
+    Section,         
+    SectionHeader,
+    MintBox,
+    TranslucentItem,
+    EmptyMessage,
+    LogoutArea,       
+    NewBadge          
+} from "../../../components/common/Styles";
 
 const MyPageIndex = () => {
     const navigate = useNavigate();
@@ -50,70 +64,80 @@ const MyPageIndex = () => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <Container>
+                <EmptyMessage $isCenter>로딩중...</EmptyMessage>
+            </Container>
+        );
+    }
+
     return (
-        <div className="mypage-container">
-            {/* 상단 헤더 */}
-            <div className="header-wrapper">
-                <PageHeader title="마이페이지" />
-            </div>
+        <Container>
+            {/* 상단 헤더 (PageHeader 내부에 Wrapper 포함됨) */}
+            <PageHeader title="마이페이지" />
 
             {/* 사용자 이름 영역 */}
-            <div className="user-name-area">
-                <h2 className="user-name-title">
-                    {userInfo.name}<span className="user-name-suffix">님</span>
-                </h2>
-            </div>
+            <UserGreetingArea>
+                <GreetingTitle>
+                    {userInfo.name}<span>님</span>
+                </GreetingTitle>
+            </UserGreetingArea>
 
-            {/* 회원정보 수정 버튼 (민트색 꽉 찬 버튼) */}
-            <button 
-                className="action-btn" 
-                onClick={() => navigate('/mypage/edit')}
-            >
+            {/* 회원정보 수정 버튼 */}
+            <FullWidthButton onClick={() => navigate('/mypage/edit')}>
                 회원정보 수정
-            </button>
+            </FullWidthButton>
 
             {/* 즐겨찾기 섹션 */}
-            <div className="section">
-                <h3 className="section-title">&lt; 레시피 즐겨찾기 &gt;</h3>
-                <div className="list-box">
+            <Section>
+                <SectionHeader>&lt; 레시피 즐겨찾기 &gt;</SectionHeader>
+                <MintBox>
                     {userInfo.favorites.length > 0 ? (
                         userInfo.favorites.map(item => (
-                            <div key={item.id} className="list-item" onClick={() => console.log('레시피 이동')}>
+                            <TranslucentItem 
+                                key={item.id} 
+                                onClick={() => console.log('레시피 이동')}
+                            >
                                 {item.title} <span>&gt;</span>
-                            </div>
+                            </TranslucentItem>
                         ))
                     ) : (
-                        <div className="empty-message">즐겨찾기한 레시피가 없습니다.</div>
+                        <EmptyMessage $marginTop="auto" $isCenter>
+                            즐겨찾기한 레시피가 없습니다.
+                        </EmptyMessage>
                     )}
-                </div>
-            </div>
+                </MintBox>
+            </Section>
 
             {/* 알림 섹션 */}
-            <div className="section">
-                <h3 className="section-title">&lt; 알림 &gt;</h3>
-                <div className="list-box">
+            <Section>
+                <SectionHeader>&lt; 알림 &gt;</SectionHeader>
+                <MintBox>
                     {userInfo.notifications.length > 0 ? (
                         userInfo.notifications.map(noti => (
-                            <div key={noti.id} className="list-item">
+                            <TranslucentItem key={noti.id}>
                                 <span>
                                     {noti.message}
-                                    {noti.isNew && <span style={{color: '#FF6B6B', fontSize: '10px', marginLeft:'4px'}}>N</span>}
+                                    {noti.isNew && <NewBadge>N</NewBadge>}
                                 </span>
-                            </div>
+                            </TranslucentItem>
                         ))
                     ) : (
-                        <div className="empty-message">새로운 알림이 없습니다.</div>
+                        <EmptyMessage $marginTop="auto" $isCenter>
+                            새로운 알림이 없습니다.
+                        </EmptyMessage>
                     )}
-                </div>
-            </div>
+                </MintBox>
+            </Section>
 
-            {/* 로그아웃 버튼 (하단, 민트색) */}
-            <div className="logout-btn-area">
-                <button className="action-btn" onClick={handleLogout}>
+            {/* 로그아웃 버튼 */}
+            <LogoutArea>
+                <FullWidthButton onClick={handleLogout}>
                     로그아웃
-                </button>
-            </div>
-        </div>
+                </FullWidthButton>
+            </LogoutArea>
+        </Container>
     );
 };
 
