@@ -108,7 +108,7 @@ const EditProfile = () => {
     // 저장 성공 
     setShowToast(true);
     setTimeout(() => {
-        navigate('/mypage'); 
+        navigate('/fridge'); 
     }, 1500);
   };
 
