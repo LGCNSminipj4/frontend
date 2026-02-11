@@ -67,8 +67,8 @@ const FridgeIndex = () => {
               <span>쓰레기통</span>
               <FiTrash2 size={22} />
             </li>
-            <li onClick={() => navigate('/mypage')}>
-              <span>마이페이지</span>
+            <li onClick={() => navigate('/mypage/edit')}>
+              <span>회원정보 수정</span>
               <FiUser size={22} />
             </li>
           </ul>
