@@ -46,13 +46,13 @@ const ToastMessage = styled.div`
     animation: ${fadeInOut} 2s ease-in-out forwards;
 `;
 
-// ================= [가짜 데이터 시작: 백엔드 연결 시 삭제] =================
+// ================= [가짜 데이터 시작] =================
 const mockDatabase = {
-    "우유": { unit: "ml", storageType: "냉장", defaultExpiryDays: 10 },
-    "계란": { unit: "개", storageType: "냉장", defaultExpiryDays: 30 },
-    "삼겹살": { unit: "g", storageType: "냉동", defaultExpiryDays: 180 },
-    "사과": { unit: "개", storageType: "냉장", defaultExpiryDays: 14 },
-    "감자": { unit: "개", storageType: "실온", defaultExpiryDays: 20 }
+    "우유": { storageType: "냉장", defaultExpiryDays: 10 },
+    "계란": { storageType: "냉장", defaultExpiryDays: 30 },
+    "삼겹살": { storageType: "냉동", defaultExpiryDays: 180 },
+    "사과": { storageType: "냉장", defaultExpiryDays: 14 },
+    "감자": { storageType: "실온", defaultExpiryDays: 20 }
 };
 // ================= [가짜 데이터 끝] =================
 
@@ -63,7 +63,6 @@ const IngredientAdd = () => {
     const [ingredient, setIngredient] = useState({
         name: '',
         amount: '',
-        unit: 'ml',
         regYear: String(today.getFullYear()),
         regMonth: String(today.getMonth() + 1).padStart(2, '0'),
         regDay: String(today.getDate()).padStart(2, '0'),
@@ -78,7 +77,7 @@ const IngredientAdd = () => {
     const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
     const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 
-    // --- 날짜 계산 로직: 등록일 + 보관기간 = 소비기한 ---
+    // --- 날짜 계산 로직 ---
     const updateExpiryDate = (currentData) => {
         const name = currentData.name.trim();
         if (mockDatabase[name] && currentData.regYear && currentData.regMonth && currentData.regDay) {
@@ -105,7 +104,6 @@ const IngredientAdd = () => {
         setIngredient(prev => {
             const next = { ...prev, [name]: value };
             
-            // 등록일 날짜를 바꿀 때마다 소비기한을 다시 계산
             if (['regYear', 'regMonth', 'regDay'].includes(name)) {
                 const autoDate = updateExpiryDate(next);
                 if (autoDate) {
@@ -118,30 +116,16 @@ const IngredientAdd = () => {
         });
     };
 
-    // --- 자동완성 및 정보 불러오기 ---
-    const handleAutoFill = async () => {
+    const handleAutoFill = () => {
         const name = ingredient.name.trim();
         if (!name) return;
 
-        // 1. [진짜 백엔드 연결 시 아래 블록 주석 해제]
-        /*
-        try {
-            const response = await fetch(`/api/ingredients/search?name=${name}`);
-            if (response.ok) {
-                const data = await response.json();
-                // (데이터에 따른 setIngredient 로직 추가)
-            }
-        } catch (e) { console.error(e); }
-        */
-
-        // 2. [가짜 데이터 로직 시작: 백엔드 연결 시 삭제]
         if (mockDatabase[name]) {
             const info = mockDatabase[name];
             const autoDate = updateExpiryDate({ ...ingredient, name });
 
             setIngredient(prev => ({
                 ...prev,
-                unit: info.unit,
                 storageType: info.storageType,
                 ...(autoDate && {
                     expYear: autoDate.expYear,
@@ -152,7 +136,6 @@ const IngredientAdd = () => {
             setToastText(`'${name}' 정보를 불러왔습니다.`);
             setShowToast(true);
         }
-        // [가짜 데이터 로직 끝]
     };
 
     const handleSubmit = async (e) => {
@@ -163,19 +146,6 @@ const IngredientAdd = () => {
             return;
         }
 
-        // 3. [진짜 백엔드 등록 시 아래 블록 주석 해제]
-        /*
-        try {
-            const response = await fetch('/api/ingredients', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(ingredient)
-            });
-            if (response.ok) { navigate('/fridge'); }
-        } catch (e) { alert('등록 실패'); }
-        */
-
-        // 4. [가짜 성공 로직: 백엔드 연결 시 삭제]
         alert(`${ingredient.name} 등록 완료!`);
         navigate('/fridge'); 
     };
@@ -196,7 +166,7 @@ const IngredientAdd = () => {
                     <Label>재료명</Label>
                     <StyledInput 
                         type="text" name="name" 
-                        placeholder="예: 우유, 계란 (입력 후 다른 곳 클릭)"
+                        placeholder="재료명을 입력하세요"
                         value={ingredient.name} 
                         onChange={handleChange} 
                         onBlur={handleAutoFill} 
@@ -205,14 +175,13 @@ const IngredientAdd = () => {
 
                 <InputGroup>
                     <Label>용량</Label>
-                    <FlexRow>
-                        <StyledInput type="number" name="amount" placeholder="0" value={ingredient.amount} onChange={handleChange} style={{ flex: 1 }} />
-                        <StyledSelect name="unit" value={ingredient.unit} onChange={handleChange} style={{ flex: 1 }}>
-                            <option value="ml">ml</option>
-                            <option value="g">g</option>
-                            <option value="개">개</option>
-                        </StyledSelect>
-                    </FlexRow>
+                    <StyledInput 
+                        type="number" 
+                        name="amount" 
+                        placeholder="용량을 입력하세요(숫자)" 
+                        value={ingredient.amount} 
+                        onChange={handleChange} 
+                    />
                 </InputGroup>
 
                 <InputGroup>

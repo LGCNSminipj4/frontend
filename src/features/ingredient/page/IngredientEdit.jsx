@@ -11,7 +11,6 @@ import {
 } from '../../../components/common/CommonStyles';
 import PageHeader from '../../../components/common/PageHeader';
 
-// --- 애니메이션 ---
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
@@ -38,6 +37,7 @@ const ToastMessage = styled.div`
     animation: ${slideUp} 0.3s ease-out;
 `;
 
+// 커스텀 모달 스타일
 const ModalOverlay = styled.div`
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -129,14 +129,11 @@ const IngredientEdit = () => {
     const [ingredient, setIngredient] = useState({
         name: '',
         amount: '',
-        unit: '',
-        customUnit: '',
         regYear: '', regMonth: '', regDay: '',
         expYear: '', expMonth: '', expDay: '',
         storageType: ''
     });
     
-    const [isEtc, setIsEtc] = useState(false);
     const [showToast, setShowToast] = useState(false);
     const [toastText, setToastText] = useState("");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -155,17 +152,7 @@ const IngredientEdit = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'unit') {
-            const isUnitEtc = value === 'etc';
-            setIsEtc(isUnitEtc);
-            setIngredient(prev => ({ 
-                ...prev, 
-                unit: value, 
-                customUnit: isUnitEtc ? prev.customUnit : '' 
-            }));
-        } else {
-            setIngredient(prev => ({ ...prev, [name]: value }));
-        }
+        setIngredient(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSave = (e) => {
@@ -173,8 +160,6 @@ const IngredientEdit = () => {
         
         if (!ingredient.name.trim()) return triggerToast('재료명을 입력해주세요.');
         if (!ingredient.amount || ingredient.amount <= 0) return triggerToast('용량을 입력해주세요.');
-        if (!ingredient.unit) return triggerToast('용량의 단위를 선택해주세요.');
-        if (isEtc && !ingredient.customUnit.trim()) return triggerToast('단위를 작성해주세요.');
         if (!ingredient.regYear || !ingredient.regMonth || !ingredient.regDay) return triggerToast('등록일을 모두 선택해주세요.');
         if (!ingredient.expYear || !ingredient.expMonth || !ingredient.expDay) return triggerToast('소비기한을 모두 선택해주세요.');
         if (!ingredient.storageType) return triggerToast('보관 방식을 선택해주세요.');
@@ -202,39 +187,19 @@ const IngredientEdit = () => {
                     <Label>재료명</Label>
                     <StyledInput 
                         type="text" name="name" 
-                        placeholder="재료 이름을 입력하세요" 
+                        placeholder="재료명을 입력하세요" 
                         value={ingredient.name} onChange={handleChange} 
                     />
                 </InputGroup>
 
                 <InputGroup>
                     <Label>용량</Label>
-                    <FlexRow>
-                        <StyledInput 
-                            type="number" name="amount" 
-                            placeholder="0" value={ingredient.amount} 
-                            onChange={handleChange} style={{ flex: 1 }}
-                        />
-                        <StyledSelect 
-                            name="unit" value={ingredient.unit} 
-                            onChange={handleChange} style={{ flex: 1 }}
-                        >
-                            <option value="">선택</option>
-                            <option value="ml">ml</option>
-                            <option value="g">g</option>
-                            <option value="개">개</option>
-                            <option value="etc">기타</option>
-                        </StyledSelect>
-                    </FlexRow>
-                    {isEtc && (
-                        <StyledInput
-                            type="text" name="customUnit"
-                            placeholder="단위를 직접 입력하세요"
-                            value={ingredient.customUnit}
-                            onChange={handleChange}
-                            style={{ marginTop: '8px' }}
-                        />
-                    )}
+                    <StyledInput 
+                        type="number" name="amount" 
+                        placeholder="용량을 입력하세요 (숫자)" 
+                        value={ingredient.amount} 
+                        onChange={handleChange} 
+                    />
                 </InputGroup>
 
                 <InputGroup>
@@ -301,7 +266,6 @@ const IngredientEdit = () => {
                 </ModalOverlay>
             )}
 
-            {/* 토스트 메시지 */}
             {showToast && <ToastMessage>{toastText}</ToastMessage>}
         </Container>
     );
