@@ -56,7 +56,7 @@ const App = () => {
                     <Route path='/recipe/search' element={<RecipeSearch />} />
 
                     {/* --- MyPage --- */}
-                    <Route path='/mypage' element={<MyPageIndex />} />
+                    {/* <Route path='/mypage' element={<MyPageIndex />} /> */}
                     <Route path='/mypage/edit' element={<MyPageEdit />} />
 
                     {/* --- Consumption --- */}
