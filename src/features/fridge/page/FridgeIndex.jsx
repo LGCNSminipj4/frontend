@@ -166,7 +166,7 @@ const FridgeIndex = () => {
         <div className="ingredient-list">
           {filteredItems.length > 0 ? (
             filteredItems.map(item => {
-              const dDayText = calculateDDay(item.expirtation_date);
+              const dDayText = calculateDDay(item.expiration_date);
               const isUrgent = dDayText === 'D-Day' || (dDayText.startsWith('D-') && parseInt(dDayText.split('-')[1]) <= 3) || dDayText.startsWith('D+');
 
               return (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
+import api from '../../../api/axios';
 
 import { 
     Container, 
@@ -95,7 +96,7 @@ const FlexRow = styled.div`
 const EditButtonGroup = styled.div`
     margin-top: 50px;
     display: flex;
-    flex-direction: column; // 세로 정렬로 변경하여 밑에 추가하기 용이하게 함
+    flex-direction: column;
     align-items: center;
     gap: 15px;
     padding-bottom: 30px;
@@ -141,18 +142,38 @@ const ActionButton = styled.button`
 
 const IngredientEdit = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const item = location.state;
 
     const [ingredient, setIngredient] = useState({
+        ingredients_id: '',
         name: '',
         amount: '',
         regYear: '', regMonth: '', regDay: '',
         expYear: '', expMonth: '', expDay: '',
         storageType: ''
     });
-    
+
     const [showToast, setShowToast] = useState(false);
     const [toastText, setToastText] = useState("");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    // --- 전달받은 item 정보 input에 채워넣기 ---
+    useEffect(() => {
+        if (item) {
+            const sDate = item.storage_date ? item.storage_date.split('-') : ['', '', ''];
+            const eDate = item.expiration_date ? item.expiration_date.split('-') : ['', '', ''];
+
+            setIngredient({
+                ingredients_id: item.ingredients_id,
+                name: item.ingredients_name,
+                amount: item.amount,
+                regYear: sDate[0], regMonth: sDate[1], regDay: sDate[2],
+                expYear: eDate[0], expMonth: eDate[1], expDay: eDate[2],
+                storageType: item.storage_condition
+            });
+        }
+    }, [item]);
 
     const triggerToast = (text) => {
         setToastText(text);
@@ -171,7 +192,8 @@ const IngredientEdit = () => {
         setIngredient(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSave = (e) => {
+    // --- [저장] API 연결 (PUT /ingredients/update/{ingredientsId}) ---
+    const handleSave = async (e) => {
         e.preventDefault();
         
         if (!ingredient.name.trim()) return triggerToast('재료명을 입력해주세요.');
@@ -180,23 +202,47 @@ const IngredientEdit = () => {
         if (!ingredient.expYear || !ingredient.expMonth || !ingredient.expDay) return triggerToast('소비기한을 모두 선택해주세요.');
         if (!ingredient.storageType) return triggerToast('보관 방식을 선택해주세요.');
 
-        triggerToast('성공적으로 저장되었습니다.');
-        setTimeout(() => navigate('/fridge'), 1500);
+        const updateData = {
+            ingredients_name: ingredient.name,
+            amount: Number(ingredient.amount),
+            storage_condition: ingredient.storageType,
+            storage_date: `${ingredient.regYear}-${ingredient.regMonth}-${ingredient.regDay}`,
+            expiration_date: `${ingredient.expYear}-${ingredient.expMonth}-${ingredient.expDay}`
+        };
+
+        try {
+            await api.put(`/ingredients/update/${ingredient.ingredients_id}`, updateData);
+            triggerToast('성공적으로 수정되었습니다.');
+            setTimeout(() => navigate('/fridge'), 1500);
+        } catch (error) {
+            console.error("수정 실패:", error);
+            triggerToast('저장에 실패했습니다.');
+        }
     };
 
-    const handleConsumption = () => {
-        // 실제 연동 시: await api.moveToConsumption(ingredient.id);
-        triggerToast(`${ingredient.name || '재료'}가 모두 소비 되었습니다.`);
-        
-        setTimeout(() => {
-            navigate('/fridge');
-        }, 1500);
+    // --- [소비 완료] API 연결 (PUT /ingredients/consumed/{ingredientsId}) ---
+    const handleConsumption = async () => {
+        try {
+            await api.put(`/ingredients/consumed/${ingredient.ingredients_id}`);
+            triggerToast(`${ingredient.name}가 소비 완료되었습니다.`);
+            setTimeout(() => navigate('/fridge'), 1500);
+        } catch (error) {
+            console.error("소비 처리 실패:", error);
+            triggerToast('소비 처리 중 오류가 발생했습니다.');
+        }
     };
 
-    const confirmDelete = () => {
-        setShowDeleteModal(false);
-        triggerToast('재료가 삭제되었습니다.');
-        setTimeout(() => navigate('/fridge'), 1500);
+    // --- [재료 삭제] API 연결 (PUT /ingredients/trash/{ingredientsId}) ---
+    const confirmDelete = async () => {
+        try {
+            await api.put(`/ingredients/trash/${ingredient.ingredients_id}`);
+            setShowDeleteModal(false);
+            triggerToast('재료가 쓰레기통으로 이동되었습니다.');
+            setTimeout(() => navigate('/fridge'), 1500);
+        } catch (error) {
+            console.error("삭제 실패:", error);
+            triggerToast('삭제에 실패했습니다.');
+        }
     };
 
     const years = Array.from({ length: 11 }, (_, i) => 2020 + i);

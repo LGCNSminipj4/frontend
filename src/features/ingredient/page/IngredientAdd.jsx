@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../api/axios';
 
 import { 
     Container, 
@@ -138,17 +139,40 @@ const IngredientAdd = () => {
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!ingredient.name) {
-            setToastText("재료명을 입력해주세요");
-            setShowToast(true);
-            return;
-        }
+// --- 서버에 데이터 전송 ---
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!ingredient.name || !ingredient.expYear) {
+        setToastText("재료명과 소비기한을 모두 입력해주세요.");
+        setShowToast(true);
+        return;
+    }
 
-        alert(`${ingredient.name} 등록 완료!`);
-        navigate('/fridge'); 
+    const requestData = {
+        ingredients_name: ingredient.name,
+        amount: Number(ingredient.amount) || 0,
+        storage_condition: ingredient.storageType,
+        storage_date: `${ingredient.regYear}-${ingredient.regMonth}-${ingredient.regDay}`,
+        expiration_date: `${ingredient.expYear}-${ingredient.expMonth}-${ingredient.expDay}`,
+        status: 'ACTIVE', 
+        user_id: 1 // 실제 서비스 시에는 로그인한 유저 ID로 교체 필요
     };
+
+    try {
+        const response = await api.post('/ingredients/insert', requestData);
+        
+        if (response.status === 200 || response.status === 201) {
+            alert(`${ingredient.name} 등록 완료!`);
+            navigate('/fridge');
+        }
+    } catch (error) {
+        console.error("재료 등록 실패:", error);
+        const errorMsg = error.response?.data?.message || "서버 연결 실패. 다시 시도해주세요.";
+        setToastText(errorMsg);
+        setShowToast(true);
+    }
+};
 
     useEffect(() => {
         if (showToast) {
