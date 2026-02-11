@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// ★ 아까 만든 axios 설정 파일 불러오기
 import api from '../../../api/axios'; 
 
 import PageHeader from '../../../components/common/PageHeader'; 
