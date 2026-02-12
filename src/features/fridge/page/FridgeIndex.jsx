@@ -13,7 +13,7 @@ const FridgeIndex = () => {
   const navigate = useNavigate(); 
 
   // [수정] XX 대신 localStorage에 저장된 userId 혹은 userName을 가져옵니다.
-  const [userName, setUserName] = useState(localStorage.getItem('userId') || '사용자');
+  const [userName, setUserName] = useState(localStorage.getItem('userId') || '백수저');
   const [activeTab, setActiveTab] = useState('냉장');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
@@ -34,7 +34,6 @@ const FridgeIndex = () => {
       });
       
       console.log("냉장고 데이터 응답 데이터:", response.data); 
-      // 만약 서버에서 userId를 따로 준다면 여기서 setUserName(response.data[0].userId) 가능
       setIngredients(response.data); 
     } catch (error) {
       console.error("냉장고 로드 실패:", error);
@@ -60,26 +59,38 @@ const FridgeIndex = () => {
     return diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
   };
 
-  // --- 필터링 및 정렬 ---
-  const filteredItems = ingredients
-  .filter(item => {
-    // 1. 탭 필터링: storageCondition 값이 탭 이름('냉장', '냉동', '실온')과 정확히 일치해야 함
-    const matchesTab = item.storageCondition === activeTab;
-    
-    // 2. 상태 필터링: 복구된 아이템이 'ACTIVE' 상태로 오는지 확인. 
-    // 만약 복구 후에도 목록에 안 뜨면 아래 isActive 조건을 잠시 지우고 테스트해보세요.
-    const isActive = item.status === 'ACTIVE' || !item.status; 
+const filteredItems = (() => {
+    // 1. 쓰레기 데이터 제외
+    const cleanData = ingredients.filter(item => 
+      item.ingredientsName !== 'string' && item.ingredientsName !== ''
+    );
 
-    return matchesTab && isActive;
-  })
-  .sort((a, b) => {
-    if (sortType === 'expDate') {
-      return new Date(a.expirationDate) - new Date(b.expirationDate);
-    } else {
-      // 명세서에 등록일 필드가 없으므로 storageDate 사용
-      return new Date(b.storageDate) - new Date(a.storageDate);
-    }
-  });
+    // 2. 이름 기준 중복 제거
+    const unique = [];
+    const seenNames = new Set();
+    cleanData.forEach(item => {
+      if (!seenNames.has(item.ingredientsName)) {
+        seenNames.add(item.ingredientsName);
+        unique.push(item);
+      }
+    });
+
+    // 3. [핵심] 유연한 탭 매칭
+    return unique.filter(item => {
+      // 보관상태 값의 공백 제거 (방어 코드)
+      const storage = item.storageCondition ? item.storageCondition.trim() : '';
+      
+      // 정확히 일치하는 경우
+      if (storage === activeTab) return true;
+
+      // [추가] 보관상태가 'string'이거나 알 수 없는 값인 경우 '냉장' 탭에서 보여주기
+      if (activeTab === '냉장' && (storage === 'string' || !['냉장', '냉동', '실온'].includes(storage))) {
+        return true;
+      }
+
+      return false;
+    }).sort((a, b) => new Date(a.expirationDate) - new Date(b.expirationDate));
+  })();
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
