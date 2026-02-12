@@ -19,26 +19,35 @@ const FridgeIndex = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // (기본값: 등록일순)
-  const [sortType, setSortType] = useState('regDate'); 
+  const [sortType, setSortType] = useState('expDate'); 
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
 
   const [ingredients, setIngredients] = useState([]);
 
   // ---  데이터 불러오기 ---
   useEffect(() => {
-    const fetchIngredients = async () => {
-      try {
-        // 백엔드 엔드포인트 호출
-        const response = await api.get('/ingredients'); 
-        setIngredients(response.data);
-      } catch (error) {
-        console.error("데이터 불러오기 실패:", error);
+  const fetchIngredients = async () => {
+    try {
+      const token = localStorage.getItem('token'); // localStorage에서 토큰 호출
+      
+      const response = await api.get('/ingredients/fridge', {
+        headers: {
+          Authorization: `Bearer ${token}` // 헤더에 신분증(토큰) 부착
+        }
+      });
+      
+      // 스웨거 응답이 배열 형태라면 그대로 저장
+      setIngredients(response.data); 
+    } catch (error) {
+      console.error("데이터 불러오기 실패:", error);
+      if (error.response?.status === 403) {
+        alert("로그인 세션이 만료되었습니다.");
       }
-    };
+    }
+  };
 
-    fetchIngredients();
-  }, []);
+  fetchIngredients();
+}, []);
 
   // --- D-Day 계산 ---
   const calculateDDay = (targetDate) => {
@@ -56,17 +65,17 @@ const FridgeIndex = () => {
   };
 
   const filteredItems = ingredients
-    .filter(item => 
-      item.storage_condition === activeTab && 
-      item.status === 'ACTIVE'
-    )
-    .sort((a, b) => {
-      if (sortType === 'regDate') {
-        return new Date(b.storage_date) - new Date(a.storage_date);
-      } else {
-        return new Date(a.expiration_date) - new Date(b.expiration_date);
-      }
-    });
+  .filter(item => 
+    item.storageCondition === activeTab && 
+    item.status === 'ACTIVE'
+  )
+  .sort((a, b) => {
+    if (sortType === 'expDate') {
+      return new Date(a.expirationDate) - new Date(b.expirationDate);
+    } else {
+      return new Date(b.storageDate) - new Date(a.storageDate);
+    }
+  });
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
@@ -148,16 +157,16 @@ const FridgeIndex = () => {
               zIndex: 10, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
             }}>
               <div 
-                style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '14px' }}
-                onClick={() => { setSortType('regDate'); setIsSortMenuOpen(false); }}
-              >
-                등록일순
-              </div>
-              <div 
                 style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '14px', borderTop: '1px solid #eee' }}
                 onClick={() => { setSortType('expDate'); setIsSortMenuOpen(false); }}
               >
                 유통기한 임박순
+              </div>
+              <div 
+                style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '14px' }}
+                onClick={() => { setSortType('regDate'); setIsSortMenuOpen(false); }}
+              >
+                등록일순
               </div>
             </div>
           )}
@@ -166,24 +175,29 @@ const FridgeIndex = () => {
         <div className="ingredient-list">
           {filteredItems.length > 0 ? (
             filteredItems.map(item => {
-              const dDayText = calculateDDay(item.expiration_date);
-              const isUrgent = dDayText === 'D-Day' || (dDayText.startsWith('D-') && parseInt(dDayText.split('-')[1]) <= 3) || dDayText.startsWith('D+');
+                // 1. D-Day 계산 (스웨거의 expirationDate 사용)
+                const dDayText = calculateDDay(item.expirationDate);
+                
+                // 2. 긴급 항목 여부 판단 (D-3 이내거나 유통기한 지남)
+                const isUrgent = dDayText === 'D-Day' || 
+                                (dDayText.startsWith('D-') && parseInt(dDayText.split('-')[1]) <= 3) || 
+                                dDayText.startsWith('D+');
 
-              return (
+                return (
                 <div 
-                  key={item.ingredients_id} 
-                  className="ingredient-item"
-                  onClick={() => handleItemClick(item)}
+                    key={item.ingredientsId}
+                    className="ingredient-item"
+                    onClick={() => handleItemClick(item)}
                 >
-                  <div className="info">
-                    <div className="name">{item.ingredients_name}</div>
+                    <div className="info">
+                    <div className="name">{item.ingredientsName}</div>
                     <div className={`d-day ${isUrgent ? 'urgent' : ''}`}>{dDayText}</div>
-                  </div>
-                  {isUrgent && <FiAlertTriangle className="alert-icon" />}
+                    </div>
+                    {isUrgent && <FiAlertTriangle className="alert-icon" />}
                 </div>
-              );
+                );
             })
-          ) : (
+        ) : (
             <div className="empty-container">
               <p className="empty-msg">등록된 재료가 없습니다.</p>
               <p className="empty-sub-msg">새로운 재료를 추가해보세요!</p>
@@ -195,7 +209,7 @@ const FridgeIndex = () => {
       {isPopupOpen && selectedItem && (
         <div className="popup-overlay" onClick={() => setIsPopupOpen(false)}>
           <div className="selection-popup" onClick={(e) => e.stopPropagation()}>
-            <h3>{selectedItem.ingredients_name}</h3>
+            <h3>{selectedItem.ingredientsName}</h3>
             <div className="popup-btn-group">
               <button 
                 className="popup-btn" 

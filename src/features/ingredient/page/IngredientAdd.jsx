@@ -94,7 +94,7 @@ const handleSubmit = async (e) => {
     };
 
     try {
-        const response = await api.post('/ingredients/create', requestData, {
+        const response = await api.post('/ingredients/insert', requestData, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
@@ -110,7 +110,6 @@ const handleSubmit = async (e) => {
         
         if (error.response?.status === 403) {
             alert("권한이 없습니다. 다시 로그인해 주세요.");
-            // 403이 뜨면 기존 잘못된 토큰을 지워버리는 게 좋습니다.
             localStorage.removeItem('token');
             navigate('/signin');
         } else {
