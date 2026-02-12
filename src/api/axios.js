@@ -10,21 +10,14 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token"); 
-
+    const token = localStorage.getItem("token");
     if (token) {
-      if (token.startsWith('Bearer')) {
-        config.headers["Authorization"] = token;
-      } else {
-        config.headers["Authorization"] = `Bearer ${token}`;
-      }
+      config.headers["Authorization"] = `Bearer ${token}`; 
     }
-
+    console.log("실제 요청 헤더:", config.headers);
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default api;

@@ -47,16 +47,6 @@ const ToastMessage = styled.div`
     animation: ${fadeInOut} 2s ease-in-out forwards;
 `;
 
-// ================= [가짜 데이터 시작] =================
-const mockDatabase = {
-    "우유": { storageType: "냉장", defaultExpiryDays: 10 },
-    "계란": { storageType: "냉장", defaultExpiryDays: 30 },
-    "삼겹살": { storageType: "냉동", defaultExpiryDays: 180 },
-    "사과": { storageType: "냉장", defaultExpiryDays: 14 },
-    "감자": { storageType: "실온", defaultExpiryDays: 20 }
-};
-// ================= [가짜 데이터 끝] =================
-
 const IngredientAdd = () => {
     const navigate = useNavigate();
     const today = new Date();
@@ -78,99 +68,55 @@ const IngredientAdd = () => {
     const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
     const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 
-    // --- 날짜 계산 로직 ---
-    const updateExpiryDate = (currentData) => {
-        const name = currentData.name.trim();
-        if (mockDatabase[name] && currentData.regYear && currentData.regMonth && currentData.regDay) {
-            const regDate = new Date(
-                Number(currentData.regYear),
-                Number(currentData.regMonth) - 1,
-                Number(currentData.regDay)
-            );
-            
-            regDate.setDate(regDate.getDate() + mockDatabase[name].defaultExpiryDays);
-            
-            return {
-                expYear: String(regDate.getFullYear()),
-                expMonth: String(regDate.getMonth() + 1).padStart(2, '0'),
-                expDay: String(regDate.getDate()).padStart(2, '0')
-            };
-        }
-        return null;
-    };
-
     const handleChange = (e) => {
         const { name, value } = e.target;
-        
-        setIngredient(prev => {
-            const next = { ...prev, [name]: value };
-            
-            if (['regYear', 'regMonth', 'regDay'].includes(name)) {
-                const autoDate = updateExpiryDate(next);
-                if (autoDate) {
-                    next.expYear = autoDate.expYear;
-                    next.expMonth = autoDate.expMonth;
-                    next.expDay = autoDate.expDay;
-                }
-            }
-            return next;
-        });
+        setIngredient(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleAutoFill = () => {
-        const name = ingredient.name.trim();
-        if (!name) return;
-
-        if (mockDatabase[name]) {
-            const info = mockDatabase[name];
-            const autoDate = updateExpiryDate({ ...ingredient, name });
-
-            setIngredient(prev => ({
-                ...prev,
-                storageType: info.storageType,
-                ...(autoDate && {
-                    expYear: autoDate.expYear,
-                    expMonth: autoDate.expMonth,
-                    expDay: autoDate.expDay
-                })
-            }));
-            setToastText(`'${name}' 정보를 불러왔습니다.`);
-            setShowToast(true);
-        }
-    };
-
-// --- 서버에 데이터 전송 ---
 const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!ingredient.name || !ingredient.expYear) {
-        setToastText("재료명과 소비기한을 모두 입력해주세요.");
-        setShowToast(true);
+    const token = localStorage.getItem('token'); 
+
+    if (!token || token === "undefined") {
+        alert("로그인 정보가 만료되었습니다. 다시 로그인해주세요.");
+        navigate('/');
         return;
     }
 
     const requestData = {
-        ingredients_name: ingredient.name,
+        ingredientsName: ingredient.name,
         amount: Number(ingredient.amount) || 0,
-        storage_condition: ingredient.storageType,
-        storage_date: `${ingredient.regYear}-${ingredient.regMonth}-${ingredient.regDay}`,
-        expiration_date: `${ingredient.expYear}-${ingredient.expMonth}-${ingredient.expDay}`,
-        status: 'ACTIVE', 
-        user_id: 1 // 실제 서비스 시에는 로그인한 유저 ID로 교체 필요
+        storageDate: `${ingredient.regYear}-${ingredient.regMonth}-${ingredient.regDay}`,
+        expirationDate: `${ingredient.expYear}-${ingredient.expMonth}-${ingredient.expDay}`,
+        storageCondition: ingredient.storageType,
+        customDate: ""
     };
 
     try {
-        const response = await api.post('/ingredients/insert', requestData);
+        const response = await api.post('/ingredients/create', requestData, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
         
         if (response.status === 200 || response.status === 201) {
             alert(`${ingredient.name} 등록 완료!`);
             navigate('/fridge');
         }
     } catch (error) {
-        console.error("재료 등록 실패:", error);
-        const errorMsg = error.response?.data?.message || "서버 연결 실패. 다시 시도해주세요.";
-        setToastText(errorMsg);
-        setShowToast(true);
+        console.error("등록 실패 디버깅:", error.response);
+        
+        if (error.response?.status === 403) {
+            alert("권한이 없습니다. 다시 로그인해 주세요.");
+            // 403이 뜨면 기존 잘못된 토큰을 지워버리는 게 좋습니다.
+            localStorage.removeItem('token');
+            navigate('/signin');
+        } else {
+            setToastText("서버 연결 실패. 다시 시도해주세요.");
+            setShowToast(true);
+        }
     }
 };
 
@@ -193,7 +139,6 @@ const handleSubmit = async (e) => {
                         placeholder="재료명을 입력하세요"
                         value={ingredient.name} 
                         onChange={handleChange} 
-                        onBlur={handleAutoFill} 
                     />
                 </InputGroup>
 
@@ -224,7 +169,7 @@ const handleSubmit = async (e) => {
                 </InputGroup>
 
                 <InputGroup>
-                    <Label>소비기한 (자동계산)</Label>
+                    <Label>소비기한</Label>
                     <FlexRow>
                         <StyledSelect name="expYear" value={ingredient.expYear} onChange={handleChange}>
                             <option value="">년도</option>

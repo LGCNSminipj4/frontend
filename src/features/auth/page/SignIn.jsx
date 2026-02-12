@@ -22,7 +22,7 @@ const ToastMessage = styled.div`
     border-radius: 25px;
     font-size: 14px;
     font-weight: 500;
-    z-index: 9999; /* 최상단 배치 */
+    z-index: 9999;
     white-space: nowrap;
     animation: ${slideUp} 0.3s ease-out;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -62,16 +62,20 @@ const SignIn = () => {
         password: password
       });
 
-      if (response.status === 200) {
-        triggerToast("로그인에 성공했습니다!");
+if (response.status === 200) {
+    console.log("서버 전체 응답 데이터:", response.data);
 
-        if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
-        }
-        localStorage.setItem('userName', response.data.name || userId);
-        
-        setTimeout(() => navigate('/fridge'), 1000); 
-      }
+    const receivedToken = response.data.token || response.data.accessToken || response.data.jwt;
+
+    if (receivedToken) {
+        localStorage.setItem('token', receivedToken);
+        triggerToast("로그인 성공!");
+        setTimeout(() => navigate('/fridge'), 1000);
+    } else {
+        triggerToast("서버에서 토큰을 받지 못했습니다.");
+        console.error("토큰 필드가 없습니다. response.data를 확인하세요.");
+    }
+}
     } catch (error) {
       console.error("로그인 에러:", error);
       const message = error.response?.data?.message || "아이디 또는 비밀번호를 확인하세요.";
