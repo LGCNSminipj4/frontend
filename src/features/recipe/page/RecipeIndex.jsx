@@ -25,7 +25,7 @@ import {
 const RecipeIndex = () => {
     const navigate = useNavigate();
     
-    const [activeTab, setActiveTab] = useState('text'); 
+    const [activeTab, setActiveTab] = useState('youtube'); 
     const [recipeList, setRecipeList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -38,10 +38,10 @@ const RecipeIndex = () => {
 
                 let endpoint = '';
             
-                if (activeTab === 'text') {
-                    endpoint = '/recipes/text'; 
-                } else {
+                if (activeTab === 'youtube') {
                     endpoint = '/recipes/youtube'; 
+                } else {
+                    endpoint = '/recipes/text'; 
                 }
 
                 // 2. API 호출
@@ -81,16 +81,16 @@ const RecipeIndex = () => {
 
             <TabContainer>
                 <TabItem 
-                    $isActive={activeTab === 'text'}
-                    onClick={() => setActiveTab('text')}
-                >
-                    텍스트
-                </TabItem>
-                <TabItem 
                     $isActive={activeTab === 'youtube'}
                     onClick={() => setActiveTab('youtube')}
                 >
                     유튜브 (영상)
+                </TabItem>
+                <TabItem 
+                    $isActive={activeTab === 'text'}
+                    onClick={() => setActiveTab('text')}
+                >
+                    텍스트
                 </TabItem>
             </TabContainer>
 

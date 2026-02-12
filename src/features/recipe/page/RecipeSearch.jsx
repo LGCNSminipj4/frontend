@@ -40,7 +40,7 @@ const RecipeSearch = () => {
     const navigate = useNavigate();
     const [filters, setFilters] = useState({ culture: "", method: "", lifestyle: "" });
     const [isSearched, setIsSearched] = useState(false);
-    const [activeTab, setActiveTab] = useState('text');
+    const [activeTab, setActiveTab] = useState('youtube');
     const [showToast, setShowToast] = useState(false);
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -148,8 +148,8 @@ const RecipeSearch = () => {
             {isSearched && (
                 <ResultContainer>
                     <TabContainer>
-                        <TabButton $isActive={activeTab === 'text'} onClick={() => setActiveTab('text')}>텍스트</TabButton>
                         <TabButton $isActive={activeTab === 'youtube'} onClick={() => setActiveTab('youtube')}>유튜브 (영상)</TabButton>
+                        <TabButton $isActive={activeTab === 'text'} onClick={() => setActiveTab('text')}>텍스트</TabButton>
                     </TabContainer>
 
                     <ScrollArea>
