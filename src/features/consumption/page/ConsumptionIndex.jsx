@@ -35,19 +35,23 @@ const EmptyMessage = styled.div`
 `;
 
 const ConsumptionIndex = () => {
-  // 상태 관리 (목록, 로딩)
   const [consumedList, setConsumedList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // [API 연동] 화면 켜질 때 소비 기록 불러오기
   useEffect(() => {
     const fetchConsumedList = async () => {
       try {
         setIsLoading(true);
-        // GET 백엔드 주소가 '/ingredients/consumed'라고 가정
-        const response = await api.get('/ingredients/consumed');
+        const token = localStorage.getItem('token'); // 토큰 가져오기
         
-        console.log("소비 완료 목록:", response.data);
+        // 1. 헤더에 토큰 추가하여 요청
+        const response = await api.get('/ingredients/consumed', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        
+        console.log("소비 완료 데이터 원본:", response.data);
         setConsumedList(response.data);
 
       } catch (error) {
@@ -66,7 +70,7 @@ const ConsumptionIndex = () => {
     return (
       <Container>
         <PageHeader title="소비 완료" />
-        <ContentArea style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <ContentArea style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <div>기록을 불러오는 중...</div>
         </ContentArea>
       </Container>
@@ -79,7 +83,7 @@ const ConsumptionIndex = () => {
 
       <ContentArea>
         <SummaryText>
-          이번 달에 총 {totalCount}가지의 재료를 소비하였습니다
+          총 {totalCount}가지의 재료가 소비되었습니다
         </SummaryText>
 
         {totalCount === 0 ? (
@@ -87,15 +91,13 @@ const ConsumptionIndex = () => {
         ) : (
             <div style={{ padding: '0 10px' }}>
             {consumedList.map((item) => (
-                <ListItem key={item.ingredients_id}>
+                // 2. 스웨거 키 이름으로 수정 (ingredientsId, ingredientsName)
+                <ListItem key={item.ingredientsId}>
                 <ItemInfo>
-                    <ItemName>{item.ingredients_name}</ItemName>
-                    {/* 백엔드에서 주는 날짜 필드명이 'expiration_date'인지, 
-                        'consumed_date'(소비일)인지 확인 필요합니다.
-                        일단 기존 코드대로 expiration_date로 둡니다.
-                    */}
+                    <ItemName>{item.ingredientsName}</ItemName>
                     <ConsumedDate>
-                        {item.consumed_date || item.expiration_date}
+                        {/* 소비일 또는 수정일 등을 백엔드 필드명에 맞춰 출력 */}
+                        {item.consumedDate || item.expirationDate || "날짜 정보 없음"}
                     </ConsumedDate>
                 </ItemInfo>
                 </ListItem>

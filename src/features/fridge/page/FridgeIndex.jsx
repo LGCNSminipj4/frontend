@@ -12,7 +12,8 @@ import api from '../../../api/axios';
 const FridgeIndex = () => {
   const navigate = useNavigate(); 
 
-  const [userName, setUserName] = useState('XX');
+  // [수정] XX 대신 localStorage에 저장된 userId 혹은 userName을 가져옵니다.
+  const [userName, setUserName] = useState(localStorage.getItem('userId') || '사용자');
   const [activeTab, setActiveTab] = useState('냉장');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
@@ -24,30 +25,25 @@ const FridgeIndex = () => {
 
   const [ingredients, setIngredients] = useState([]);
 
-  // ---  데이터 불러오기 ---
-  useEffect(() => {
+  // --- 데이터 불러오기 (명세서 반영: /ingredients/fridge) ---
   const fetchIngredients = async () => {
     try {
-      const token = localStorage.getItem('token'); // localStorage에서 토큰 호출
-      
+      const token = localStorage.getItem('token');
       const response = await api.get('/ingredients/fridge', {
-        headers: {
-          Authorization: `Bearer ${token}` // 헤더에 신분증(토큰) 부착
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
       
-      // 스웨거 응답이 배열 형태라면 그대로 저장
+      console.log("냉장고 데이터 응답 데이터:", response.data); 
+      // 만약 서버에서 userId를 따로 준다면 여기서 setUserName(response.data[0].userId) 가능
       setIngredients(response.data); 
     } catch (error) {
-      console.error("데이터 불러오기 실패:", error);
-      if (error.response?.status === 403) {
-        alert("로그인 세션이 만료되었습니다.");
-      }
+      console.error("냉장고 로드 실패:", error);
     }
   };
 
-  fetchIngredients();
-}, []);
+  useEffect(() => {
+    fetchIngredients();
+  }, []);
 
   // --- D-Day 계산 ---
   const calculateDDay = (targetDate) => {
@@ -64,15 +60,23 @@ const FridgeIndex = () => {
     return diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
   };
 
+  // --- 필터링 및 정렬 ---
   const filteredItems = ingredients
-  .filter(item => 
-    item.storageCondition === activeTab && 
-    item.status === 'ACTIVE'
-  )
+  .filter(item => {
+    // 1. 탭 필터링: storageCondition 값이 탭 이름('냉장', '냉동', '실온')과 정확히 일치해야 함
+    const matchesTab = item.storageCondition === activeTab;
+    
+    // 2. 상태 필터링: 복구된 아이템이 'ACTIVE' 상태로 오는지 확인. 
+    // 만약 복구 후에도 목록에 안 뜨면 아래 isActive 조건을 잠시 지우고 테스트해보세요.
+    const isActive = item.status === 'ACTIVE' || !item.status; 
+
+    return matchesTab && isActive;
+  })
   .sort((a, b) => {
     if (sortType === 'expDate') {
       return new Date(a.expirationDate) - new Date(b.expirationDate);
     } else {
+      // 명세서에 등록일 필드가 없으므로 storageDate 사용
       return new Date(b.storageDate) - new Date(a.storageDate);
     }
   });
@@ -112,7 +116,10 @@ const FridgeIndex = () => {
           </ul>
 
           <div className="drawer-footer">
-            <button className="logout-btn" onClick={() => console.log('로그아웃')}>
+            <button className="logout-btn" onClick={() => {
+              localStorage.clear();
+              navigate('/login');
+            }}>
               로그아웃 <FiLogOut size={18} />
             </button>
           </div>
@@ -129,6 +136,7 @@ const FridgeIndex = () => {
       </header>
 
       <div className="user-title-container">
+        {/* [수정] userId 가 출력되도록 변경 */}
         <div className="user-badge">{userName}의 냉장고</div>
       </div>
 
@@ -175,10 +183,7 @@ const FridgeIndex = () => {
         <div className="ingredient-list">
           {filteredItems.length > 0 ? (
             filteredItems.map(item => {
-                // 1. D-Day 계산 (스웨거의 expirationDate 사용)
                 const dDayText = calculateDDay(item.expirationDate);
-                
-                // 2. 긴급 항목 여부 판단 (D-3 이내거나 유통기한 지남)
                 const isUrgent = dDayText === 'D-Day' || 
                                 (dDayText.startsWith('D-') && parseInt(dDayText.split('-')[1]) <= 3) || 
                                 dDayText.startsWith('D+');
@@ -200,7 +205,6 @@ const FridgeIndex = () => {
         ) : (
             <div className="empty-container">
               <p className="empty-msg">등록된 재료가 없습니다.</p>
-              <p className="empty-sub-msg">새로운 재료를 추가해보세요!</p>
             </div>
           )}
         </div>
@@ -219,7 +223,7 @@ const FridgeIndex = () => {
               </button>
               <button 
                 className="popup-btn" 
-                onClick={() => navigate('/recipe', { state: { ingredient: selectedItem.ingredients_name } })}
+                onClick={() => navigate('/recipe', { state: { ingredient: selectedItem.ingredientsName } })}
               >
                 레시피 검색
               </button>

@@ -1,176 +1,138 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import styled, { keyframes } from 'styled-components';
 import api from '../../../api/axios'; 
 
 import PageHeader from '../../../components/common/PageHeader'; 
-import { 
-  Container, 
-  ContentArea, 
-  ItemInfo, 
-  ItemName 
-} from '../../../components/common/CommonStyles'; 
-import { 
-  EmptyMessage, 
-  TrashItem, 
-  DdayText, 
-  ActionButtonGroup, 
-  MiniButton, 
-  FixedBottomArea, 
-  DangerButton,
-  SummaryText 
-} from '../../../components/common/Styles';
+import { Container, ContentArea, ItemInfo, ItemName } from '../../../components/common/CommonStyles'; 
+import { EmptyMessage, TrashItem, DdayText, ActionButtonGroup, MiniButton, FixedBottomArea, DangerButton, SummaryText } from '../../../components/common/Styles';
+
+const fadeIn = keyframes` from { opacity: 0; } to { opacity: 1; } `;
+const slideUp = keyframes` from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } `;
+
+const ToastMessage = styled.div`
+  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8); color: white; padding: 12px 24px;
+  border-radius: 20px; font-size: 14px; z-index: 4000; animation: ${slideUp} 0.3s ease-out;
+`;
+
+const PopupOverlay = styled.div`
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center;
+  z-index: 3000; animation: ${fadeIn} 0.2s ease-out;
+`;
+
+const CustomPopup = styled.div`
+  background: white; padding: 24px; border-radius: 16px; width: 80%; max-width: 300px; text-align: center;
+  h3 { margin: 0 0 20px 0; font-size: 16px; color: #333; line-height: 1.4; }
+`;
+
+const PopupBtnGroup = styled.div` display: flex; gap: 10px; `;
+const PopupBtn = styled.button`
+  flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold;
+  background: ${props => props.$primary ? '#00C4B4' : '#f5f5f5'};
+  color: ${props => props.$primary ? 'white' : '#666'};
+`;
 
 const TrashIndex = () => {
   const navigate = useNavigate();
-
   const [isLoading, setIsLoading] = useState(true); 
   const [trashList, setTrashList] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastText, setToastText] = useState("");
+  const [popupConfig, setPopupConfig] = useState({ open: false, type: '', item: null });
 
-  // 1. 화면 켜지자마자 쓰레기통 목록 불러오기 (GET)
+  const triggerToast = (text) => { setToastText(text); setShowToast(true); };
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   useEffect(() => {
     const fetchTrashList = async () => {
       try {
         setIsLoading(true);
-        // [API 호출] 백엔드 주소가 '/ingredients/trash'라고 가정
-        const response = await api.get('/ingredients/trash'); 
-        
-        console.log("쓰레기통 목록:", response.data); // 데이터 확인용 로그
-        setTrashList(response.data); // 받아온 데이터로 목록 채우기
-      
-      } catch (error) {
-        console.error("데이터 로드 실패:", error);
-        // 에러 나도 빈 배열로 처리하거나, 에러 메시지 띄우기
-        // alert("목록을 불러오지 못했습니다.");
-      } finally {
-        setIsLoading(false); // 성공하든 실패하든 로딩 끝
-      }
+        const token = localStorage.getItem('token');
+        const response = await api.get('/ingredients/trash', {
+          headers: { Authorization: `Bearer ${token}` }
+        }); 
+        setTrashList(response.data);
+      } catch (error) { console.error("로드 실패:", error); } 
+      finally { setIsLoading(false); }
     };
-    
     fetchTrashList();
   }, []);
 
-  const handleBackClick = () => {
-    navigate(-1);
-  };
-
-  // 2. 복구하기 (POST 또는 PUT)
-  const handleRestore = async (id, name) => {
-    if (!window.confirm(`[${name}] 재료를 냉장고로 복구할까요?`)) return;
+  const handleConfirmAction = async () => {
+    const { type, item } = popupConfig;
+    const token = localStorage.getItem('token');
+    const config = { headers: { Authorization: `Bearer ${token}` } };
 
     try {
-      // [API 호출] 해당 ID를 복구해달라고 요청
-      // 주소 예시: /ingredients/restore/1
-      await api.post(`/ingredients/restore/${id}`); 
-      
-      alert("복구되었습니다!");
-      // 화면에서도 즉시 지워줌 (새로고침 안 해도 되게)
-      setTrashList((prev) => prev.filter(item => item.ingredients_id !== id));
-
-    } catch (error) {
-      console.error("복구 실패:", error);
-      alert("복구 중 오류가 발생했습니다.");
-    }
+      closePopup();
+      if (type === 'RESTORE') {
+        // [명세서 반영] PUT 메서드 및 경로 수정
+        await api.put(`/ingredients/trash/restore/${item.ingredientsId}`, {}, config); 
+        triggerToast(`[${item.ingredientsName}] 복구되었습니다!`);
+        setTrashList((prev) => prev.filter(i => i.ingredientsId !== item.ingredientsId));
+        setTimeout(() => navigate('/fridge'), 500);
+      } 
+      else if (type === 'DELETE_ONE') {
+        await api.delete(`/ingredients/trash/${item.ingredientsId}`, config);
+        triggerToast("삭제되었습니다.");
+        setTrashList((prev) => prev.filter(i => i.ingredientsId !== item.ingredientsId));
+      } 
+      else if (type === 'DELETE_ALL') {
+        await api.delete('/ingredients/trash', config); 
+        setTrashList([]); 
+      }
+    } catch (error) { triggerToast("오류가 발생했습니다."); }
   };
 
-  // 3. 완전 삭제하기 (DELETE)
-  const handleDelete = async (id) => {
-    if (!window.confirm("정말 삭제하시겠습니까? 복구할 수 없습니다.")) return;
+  const openPopup = (type, item = null) => setPopupConfig({ open: true, type, item });
+  const closePopup = () => setPopupConfig({ open: false, type: '', item: null });
 
-    try {
-      // [API 호출] 해당 ID를 영구 삭제
-      await api.delete(`/ingredients/trash/${id}`);
-      
-      alert("삭제되었습니다.");
-      // 화면 갱신
-      setTrashList((prev) => prev.filter(item => item.ingredients_id !== id));
-
-    } catch (error) {
-      console.error("삭제 실패:", error);
-      alert("삭제 중 오류가 발생했습니다.");
-    }
-  };
-
-  // 4. 전체 비우기 (DELETE)
-  const handleDeleteAll = async () => {
-    if (trashList.length === 0) return;
-    if (!window.confirm("휴지통을 싹 비우시겠습니까?")) return;
-
-    try {
-      // [API 호출] 전체 삭제 요청
-      await api.delete('/ingredients/trash'); 
-      
-      alert("휴지통을 비웠습니다.");
-      setTrashList([]); // 목록 싹 비우기
-
-    } catch (error) {
-      console.error("전체 삭제 실패:", error);
-      alert("전체 삭제 중 오류가 발생했습니다.");
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <Container>
-        <ContentArea style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <div>로딩중...</div>
-        </ContentArea>
-      </Container>
-    );
-  }
+  if (isLoading) return <Container><ContentArea>로딩중...</ContentArea></Container>;
 
   return (
     <Container>
-      <PageHeader title="쓰레기통" onBackClick={handleBackClick} />
-
+      <PageHeader title="쓰레기통" onBackClick={() => navigate(-1)} />
       <ContentArea>
-        {/* 목록이 있을 때만 개수 표시 */}
-        {trashList.length > 0 && (
-          <SummaryText>
-            이번 달에 총 {trashList.length}가지의 재료가 버려졌습니다 😢
-          </SummaryText>
-        )}
-
-        {trashList.length === 0 ? (
-          <EmptyMessage>
-            쓰레기통이 비었습니다.
-          </EmptyMessage>
-        ) : (
+        {trashList.length > 0 && <SummaryText>총 {trashList.length}개의 재료가 있습니다.</SummaryText>}
+        {trashList.length === 0 ? <EmptyMessage>쓰레기통이 비었습니다.</EmptyMessage> : (
           <div>
             {trashList.map((item) => (
-              <TrashItem key={item.ingredients_id}>
+              <TrashItem key={item.ingredientsId}>
                 <ItemInfo>
-                  <ItemName>{item.ingredients_name}</ItemName>
-                  {/* 날짜 필드명이 expiration_date 맞는지 확인 필요 */}
-                  <DdayText>{item.expiration_date}</DdayText>
+                  <ItemName>{item.ingredientsName}</ItemName>
+                  <DdayText>{item.ingredientsDate}</DdayText>
                 </ItemInfo>
-
                 <ActionButtonGroup>
-                  <MiniButton 
-                    onClick={() => handleRestore(item.ingredients_id, item.ingredients_name)}
-                  >
-                    복구
-                  </MiniButton>
-                  <MiniButton 
-                    $type="delete" 
-                    onClick={() => handleDelete(item.ingredients_id)}
-                  >
-                    삭제
-                  </MiniButton>
+                  <MiniButton onClick={() => openPopup('RESTORE', item)}>복구</MiniButton>
+                  <MiniButton $type="delete" onClick={() => openPopup('DELETE_ONE', item)}>삭제</MiniButton>
                 </ActionButtonGroup>
               </TrashItem>
             ))}
           </div>
         )}
       </ContentArea>
-
       {trashList.length > 0 && (
-        <FixedBottomArea>
-          <DangerButton onClick={handleDeleteAll}>
-            전체 삭제
-          </DangerButton>
-        </FixedBottomArea>
+        <FixedBottomArea><DangerButton onClick={() => openPopup('DELETE_ALL')}>전체 삭제</DangerButton></FixedBottomArea>
       )}
+      {popupConfig.open && (
+        <PopupOverlay onClick={closePopup}>
+          <CustomPopup onClick={(e) => e.stopPropagation()}>
+            <h3>{popupConfig.type === 'RESTORE' ? "복구하시겠습니까?" : "삭제하시겠습니까?"}</h3>
+            <PopupBtnGroup>
+              <PopupBtn onClick={closePopup}>취소</PopupBtn>
+              <PopupBtn $primary onClick={handleConfirmAction}>확인</PopupBtn>
+            </PopupBtnGroup>
+          </CustomPopup>
+        </PopupOverlay>
+      )}
+      {showToast && <ToastMessage>{toastText}</ToastMessage>}
     </Container>
   );
 };
